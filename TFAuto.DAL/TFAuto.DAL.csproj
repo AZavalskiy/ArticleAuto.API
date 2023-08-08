@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
+    <PackageReference Include="IEvangelist.Azure.CosmosRepository" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.35.2" />
   </ItemGroup>
 
 </Project>
