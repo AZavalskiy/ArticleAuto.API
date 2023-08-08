@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TFAuto.DAL;
+namespace TFAuto.Domain;
 public class UserRegistrationResponse
 {
     public Guid Id { get; set; }

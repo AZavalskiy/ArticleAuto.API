@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 //Services
-builder.Services.AddScoped<RegistrationService>();
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 
 //Mappers
 builder.Services.AddAutoMapper(typeof(UserMapper));

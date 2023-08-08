@@ -14,7 +14,7 @@ public class UserRegistrationRequest
     private string _surname;
     [Required]
     [DefaultValue("Vasia")]
-    [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = ErrorMessages.UserValidName)]
+    [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = ErrorMessages.USER_VALID_NAME)]
     public string Name 
     {
         get { return _name; }
@@ -32,7 +32,7 @@ public class UserRegistrationRequest
 
     [Required]
     [DefaultValue("Vasiliev")]
-    [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = ErrorMessages.UserValidSurname)]
+    [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = ErrorMessages.USER_VALID_SURNAME)]
     public string Surname 
     {
         get { return _surname; }
@@ -55,15 +55,15 @@ public class UserRegistrationRequest
 
     [Required]
     [DefaultValue("Qwerty123!")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&+=-]).{8,}$", ErrorMessage = ErrorMessages.UserValidPassword)]
-    [MinLength(8, ErrorMessage = ErrorMessages.UserValidPassword)]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&+=-]).{8,}$", ErrorMessage = ErrorMessages.USER_VALID_PASSWORD)]
+    [MinLength(8, ErrorMessage = ErrorMessages.USER_VALID_PASSWORD)]
     public string Password { get; set; }
 
     [Required]
     [DefaultValue("Qwerty123!")]
-    [Compare(nameof(Password), ErrorMessage = ErrorMessages.UserPasswordsDontMatch)]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&+=-]).{8,}$", ErrorMessage = ErrorMessages.UserValidPassword)]
-    [MinLength(8, ErrorMessage = ErrorMessages.UserValidPassword)]
+    [Compare(nameof(Password), ErrorMessage = ErrorMessages.USER_VALID_REPEAT_PASSWORD)]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&+=-]).{8,}$", ErrorMessage = ErrorMessages.USER_VALID_PASSWORD)]
+    [MinLength(8, ErrorMessage = ErrorMessages.USER_VALID_PASSWORD)]
     public string RepeatPassword { get; set; }
 
 }

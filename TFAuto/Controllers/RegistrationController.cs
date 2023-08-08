@@ -12,9 +12,9 @@ namespace TFAuto.WebApp;
 [Route("registration")]
 public class RegistrationController : ControllerBase
 {
-    private readonly RegistrationService _registrationServics;
+    private readonly IRegistrationService _registrationServics;
 
-    public RegistrationController(RegistrationService registrationServics)
+    public RegistrationController(IRegistrationService registrationServics)
     {
         _registrationServics = registrationServics;
     }
