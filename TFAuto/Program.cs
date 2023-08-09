@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
 using TFAuto.Domain;
 using TFAuto.WebApp;
 
@@ -50,30 +46,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseExceptionHandler(error =>
-{
-    error.Run(async context =>
-    {
-        context.Response.ContentType = "text/plain";
-
-        var exception = context.Features.Get<IExceptionHandlerPathFeature>().Error;
-        
-        if (exception is ValidationException validationException)
-        {
-            context.Response.StatusCode = 400;
-            await context.Response.WriteAsync(validationException.Message);
-        }
-        else if (exception is Exception serverException)
-        {
-            context.Response.StatusCode = 500;
-            await context.Response.WriteAsync(serverException.Message);
-        }
-        else
-        {
-            await context.Response.WriteAsync("An unknown error occurred");
-        }
-    });
-});
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseAuthorization();
 

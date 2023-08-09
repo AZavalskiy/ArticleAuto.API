@@ -1,9 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.ComponentModel.DataAnnotations;
-using TFAuto.DAL;
 using TFAuto.Domain;
 
 namespace TFAuto.WebApp;
@@ -19,16 +15,16 @@ public class RegistrationController : ControllerBase
         _registrationServics = registrationServics;
     }
 
-    [HttpPost("/users")]
+    [HttpPost("users")]
     [SwaggerOperation(
      Summary = "Registers user",
-     Description = "Returns saved user with userid",
+     Description = "Returns saved user with user ID",
      Tags = new[] { "Registration" }
     )]
-    [SwaggerResponse(200, "Success", typeof(UserRegistrationResponse))]
-    [SwaggerResponse(400, "Bad Request")]
-    [SwaggerResponse(500, "Internal Server Error")]
-    public async Task<ActionResult<UserRegistrationResponse>> RegisrateUser([FromBody] UserRegistrationRequest userRequest)
+    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UserRegistrationResponseModel))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<UserRegistrationResponseModel>> RegisrateUser([FromBody] UserRegistrationRequestModel userRequest)
     {
         var userResponse = await _registrationServics.RegisrateUser(userRequest);
         return Ok(userResponse);

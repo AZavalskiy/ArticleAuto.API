@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TFAuto.DAL;
+﻿namespace TFAuto.Domain;
 public class ErrorMessages
 {
     public const string USER_VALID_NAME = "Only alphabetic letters are allowed for a name!";
