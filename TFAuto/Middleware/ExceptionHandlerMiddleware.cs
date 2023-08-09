@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 namespace TFAuto.WebApp;
 
@@ -13,20 +14,30 @@ public class ExceptionHandlerMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        context.Response.ContentType = "application/json";
         try
         {
             await _next(context);
         }
         catch (ValidationException ex)
         {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsync(ex.Message);
+            await ProcessException(context, ex.GetBaseException().Message, ex.Message, (int)HttpStatusCode.BadRequest);
         }
         catch (Exception ex)
         {
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsync(ex.Message);
+            await ProcessException(context, ex.GetBaseException().Message, ex.Message, (int)HttpStatusCode.InternalServerError);
         }
+    }
+
+    private static Task ProcessException(HttpContext httpContext, string message, string displayMessage, int statusCode)
+    {
+        httpContext.Response.ContentType = "application/json";
+        httpContext.Response.StatusCode = statusCode;
+        return httpContext.Response.WriteAsync(new ErrorDetails
+        {
+            StatusCode = httpContext.Response.StatusCode,
+            Message = message,
+            DisplayMessage = displayMessage
+        }
+        .ToString());
     }
 }
