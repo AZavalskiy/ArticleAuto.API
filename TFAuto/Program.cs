@@ -1,15 +1,43 @@
+using TFAuto.Domain;
+using TFAuto.WebApp;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+//Controllers
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+//Services
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+
+//Mappers
+builder.Services.AddAutoMapper(typeof(UserMapper));
+
+//CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
+//CosmosDB
+builder.Services.AddCosmosRepository(options =>
+{
+    options.CosmosConnectionString = builder.Configuration.GetConnectionString("CosmosDBConnectionString");
+    var cosmosSettings = builder.Configuration.GetSection("CosmosDBConnectionSettings").Get<CosmosDBConnectionSettings>();
+    options.DatabaseId = cosmosSettings.DatabaseId;
+    options.ContainerId = cosmosSettings.ContainerId;
+});
+
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseCors();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -17,6 +45,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseAuthorization();
 
