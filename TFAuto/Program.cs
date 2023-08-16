@@ -1,4 +1,6 @@
 using TFAuto.Domain;
+using TFAuto.Domain.Repository.Roles;
+using TFAuto.Domain.Seeds;
 using TFAuto.WebApp;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +10,8 @@ builder.Services.AddControllers();
 
 //Services
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<RoleInitializer>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
 //Mappers
 builder.Services.AddAutoMapper(typeof(UserMapper));

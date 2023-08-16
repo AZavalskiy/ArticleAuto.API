@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using TFAuto.DAL;
+using TFAuto.TFAuto.DAL.Entities;
 
 namespace TFAuto.Domain;
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.CosmosRepository;
 
-namespace TFAuto.DAL;
+namespace TFAuto.DAL.Entities;
 
 public class BaseEntity : FullItem
 {
