@@ -5,42 +5,22 @@ namespace TFAuto.Domain;
 
 public class UserRegistrationRequestModel
 {
-    private string _name;
-    private string _surname;
+    private string _userName;
     [Required]
-    [DefaultValue("Vasia")]
-    [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = ErrorMessages.USER_VALID_NAME)]
-    public string Name 
+    [DefaultValue("VasiaVasiliev")]
+    [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = ErrorMessages.USER_VALID_USER_NAME)]
+    public string UserName 
     {
-        get { return _name; }
+        get { return _userName; }
         set {
             if (value.Length > 0)
                 {
-                    _name = char.ToUpper(value[0]) + value.Substring(1);
+                    _userName = char.ToUpper(value[0]) + value.Substring(1);
                 }
             else
                 {
-                    _name = value;
+                    _userName = value;
                 }
-        }
-    }
-
-    [Required]
-    [DefaultValue("Vasiliev")]
-    [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = ErrorMessages.USER_VALID_SURNAME)]
-    public string Surname 
-    {
-        get { return _surname; }
-        set
-        {
-            if (value.Length > 0)
-            {
-                _surname = char.ToUpper(value[0]) + value.Substring(1);
-            }
-            else
-            {
-                _surname = value;
-            }
         }
     }
 
