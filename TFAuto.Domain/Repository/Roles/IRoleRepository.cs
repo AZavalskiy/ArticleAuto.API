@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TFAuto.Domain.Repository.Roles.DTO;
+﻿using TFAuto.Domain.Repository.Roles.DTO;
 
 namespace TFAuto.Domain.Repository.Roles
 {
     public interface IRoleRepository
     {
-        Task<IEnumerable<RoleListDTO>> GetRolesAsync();
+        Task<IEnumerable<RoleListResponse>> GetRolesAsync();
 
-        Task<string> AddRoleAsync(RoleCreateDTO newRole);
+        Task<RoleCreateResponse> AddRoleAsync(RoleCreateRequest newRole);
 
-        Task<string> UpdateRoleAsync(string roleName, RoleUpdateDTO updatedRole);
+        Task<RoleUpdateResponse> UpdateRoleAsync(string id, RoleUpdateRequest updatedRole);
 
-        Task DeleteRoleAsync(string roleName);
+        Task DeleteRoleAsync(string id);
+
     }
 }

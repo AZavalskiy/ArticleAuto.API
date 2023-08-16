@@ -8,15 +8,12 @@ public class RoleUserMapper : Profile
 {
     public RoleUserMapper()
     {
+        CreateMap<Role, RoleListResponse>();
 
-        CreateMap<RoleListDTO, Role>();
-        CreateMap<Role, RoleListDTO>();
+        CreateMap<RoleCreateRequest, Role>();
+        CreateMap<Role, RoleCreateResponse>();
 
-        CreateMap<RoleCreateDTO, Role>();
-        CreateMap<Role, RoleCreateDTO>();
-
-        CreateMap<RoleUpdateDTO, Role>();
-        CreateMap<Role, RoleUpdateDTO>();
-
+        CreateMap<RoleUpdateRequest, Role>();
+        CreateMap<Role, RoleUpdateResponse>();
     }
 }

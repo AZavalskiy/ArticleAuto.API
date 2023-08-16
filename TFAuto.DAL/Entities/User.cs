@@ -1,14 +1,15 @@
-﻿using Microsoft.Azure.CosmosRepository.Attributes;
-using TFAuto.DAL.Entities;
+﻿using TFAuto.DAL.Entities;
 
 namespace TFAuto.TFAuto.DAL.Entities;
-
-[PartitionKeyPath("/partitionKey")]
 
 public class User : BaseEntity
 {
     public string UserName { get; set; }
+
     public string Email { get; set; }
+
     public string Password { get; set; }
+
     public override string PartitionKey { get; set; } = nameof(User);
+
 }

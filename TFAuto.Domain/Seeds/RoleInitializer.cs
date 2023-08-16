@@ -21,9 +21,9 @@ namespace TFAuto.Domain.Seeds
 
             List<Role> roles = new()
             {
-                new Role { Id = superAdminId, RoleName = RoleNames.SUPER_ADMIN },
-                new Role { Id = authorId, RoleName = RoleNames.AUTHOR },
-                new Role { Id = userId, RoleName = RoleNames.USER },
+                new Role () { Id = superAdminId, RoleName = RoleNames.SUPER_ADMIN },
+                new Role () { Id = authorId, RoleName = RoleNames.AUTHOR },
+                new Role () { Id = userId, RoleName = RoleNames.USER },
             };
 
             foreach (var role in roles)

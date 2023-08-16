@@ -31,24 +31,24 @@ namespace TFAuto.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddRole([FromBody] RoleCreateDTO newRole)
+        public async Task<IActionResult> AddRole([FromBody] RoleCreateRequest newRole)
         {
-            var roleName = await _roleRepository.AddRoleAsync(newRole);
-            return Ok(roleName);
+            var role = await _roleRepository.AddRoleAsync(newRole);
+            return Ok(role);
         }
 
-        [HttpPut("/{roleName}")]
-        public async Task<IActionResult> UpdateRole([FromBody] RoleUpdateDTO updatedRole)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateRole([Required] string id, [FromBody] RoleUpdateRequest updatedRole)
         {
-            var newRoleName = await _roleRepository.UpdateRoleAsync(updatedRole.RoleName, updatedRole);
-            return Ok(newRoleName);
+            var role = await _roleRepository.UpdateRoleAsync(id, updatedRole);
+            return Ok(role);
         }
 
-        [HttpDelete("/{roleName}")]
-        public async Task<IActionResult> DeleteRole([Required] string roleName)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteRole([Required] string id)
         {
-            await _roleRepository.DeleteRoleAsync(roleName);
-            return Ok(roleName);
+            await _roleRepository.DeleteRoleAsync(id);
+            return Ok();
         }
     }
 }

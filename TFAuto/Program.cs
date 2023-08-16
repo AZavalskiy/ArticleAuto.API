@@ -15,6 +15,7 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
 //Mappers
 builder.Services.AddAutoMapper(typeof(UserMapper));
+builder.Services.AddAutoMapper(typeof(RoleUserMapper));
 
 //CORS
 builder.Services.AddCors(options =>
@@ -39,6 +40,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleInitializer = scope.ServiceProvider.GetRequiredService<RoleInitializer>();
+    await roleInitializer.InitializeRoles();
+}
 
 app.UseCors();
 
