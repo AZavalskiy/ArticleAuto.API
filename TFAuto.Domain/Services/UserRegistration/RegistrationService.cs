@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.CosmosRepository;
 using System.ComponentModel.DataAnnotations;
-using TFAuto.DAL;
+using TFAuto.TFAuto.DAL.Entities;
 
 namespace TFAuto.Domain;
 

@@ -1,5 +1,8 @@
 using TFAuto.Domain;
+using TFAuto.Domain.Seeds;
+using TFAuto.Domain.Services.Roles;
 using TFAuto.WebApp;
+using TFAuto.WebApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,9 +11,12 @@ builder.Services.AddControllers();
 
 //Services
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<RoleInitializer>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 
 //Mappers
 builder.Services.AddAutoMapper(typeof(UserMapper));
+builder.Services.AddAutoMapper(typeof(RoleUserMapper));
 
 //CORS
 builder.Services.AddCors(options =>
@@ -36,6 +42,12 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var roleInitializer = scope.ServiceProvider.GetRequiredService<RoleInitializer>();
+    await roleInitializer.InitializeRoles();
+}
+
 app.UseCors();
 
 if (app.Environment.IsDevelopment())
@@ -48,6 +60,7 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
