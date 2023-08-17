@@ -11,5 +11,4 @@ public class User : BaseEntity
     public string Password { get; set; }
 
     public override string PartitionKey { get; set; } = nameof(User);
-
 }

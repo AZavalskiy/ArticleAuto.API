@@ -1,10 +1,8 @@
-﻿namespace TFAuto.Domain.Repository.Roles.DTO
+﻿namespace TFAuto.Domain.Services.Roles.DTO
 {
-    public class RoleUpdateResponse
+    public class RoleListResponse
     {
         public string Id { get; set; }
-        
         public string RoleName { get; set; }
-
     }
 }

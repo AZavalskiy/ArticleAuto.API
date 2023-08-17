@@ -1,6 +1,6 @@
 using TFAuto.Domain;
-using TFAuto.Domain.Repository.Roles;
 using TFAuto.Domain.Seeds;
+using TFAuto.Domain.Services.Roles;
 using TFAuto.WebApp;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +11,7 @@ builder.Services.AddControllers();
 //Services
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<RoleInitializer>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 
 //Mappers
 builder.Services.AddAutoMapper(typeof(UserMapper));
@@ -59,6 +59,7 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

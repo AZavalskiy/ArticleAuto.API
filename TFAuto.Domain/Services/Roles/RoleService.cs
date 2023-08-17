@@ -1,40 +1,40 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.CosmosRepository;
+using System.ComponentModel.DataAnnotations;
 using TFAuto.DAL.Entities;
-using TFAuto.Domain.Repository.Roles.DTO;
+using TFAuto.Domain.Services.Roles.DTO;
 
-namespace TFAuto.Domain.Repository.Roles
+namespace TFAuto.Domain.Services.Roles
 {
-
-    public class RoleRepository : IRoleRepository
+    public class RoleService : IRoleService
     {
         private readonly IRepository<Role> _roleRepository;
         private readonly IMapper _mapper;
 
-        public RoleRepository(IRepository<Role> roleRepository, IMapper mapper)
+        public RoleService(IRepository<Role> roleRepository, IMapper mapper)
         {
             _roleRepository = roleRepository;
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<RoleListResponse>> GetRolesAsync()
+        public async ValueTask<IEnumerable<RoleListResponse>> GetRolesAsync()
         {
             var roleList = await _roleRepository.GetAsync(t => t.Type == "Role");
 
             if (roleList == null)
-                throw new Exception("Roles didn't found.");
+                throw new ValidationException(ErrorMessages.ROLES_NOT_FOUND);
 
             var roleExistsList = _mapper.Map<IEnumerable<RoleListResponse>>(roleList);
 
             return roleExistsList;
         }
 
-        public async Task<RoleCreateResponse> AddRoleAsync(RoleCreateRequest newRole)
+        public async ValueTask<RoleCreateResponse> AddRoleAsync(RoleCreateRequest newRole)
         {
             var role = await _roleRepository.GetAsync(t => t.RoleName == newRole.RoleName);
 
             if (role.Any())
-                throw new Exception("Role already exists");
+                throw new ValidationException(ErrorMessages.ROLE_ALREADY_EXISTS);
 
             var roleMapped = _mapper.Map<Role>(newRole);
             var result = await _roleRepository.CreateAsync(roleMapped);
@@ -43,30 +43,28 @@ namespace TFAuto.Domain.Repository.Roles
             return roleNameNew;
         }
 
-        public async Task<RoleUpdateResponse> UpdateRoleAsync(string id, RoleUpdateRequest updatedRole)
+        public async ValueTask<RoleUpdateResponse> UpdateRoleAsync(string id, RoleUpdateRequest updatedRole)
         {
-            var role = await _roleRepository.GetAsync(id, nameof(Role));
-            
+            var role = await _roleRepository.TryGetAsync(id, nameof(Role));
+
             if (role == null)
-                throw new Exception("Role not found.");
+                throw new ValidationException(ErrorMessages.ROLE_NOT_FOUND);
 
             role.RoleName = updatedRole.RoleName;
             await _roleRepository.UpdateAsync(role);
-            var roleUpdatedName = _mapper.Map<RoleUpdateResponse>(role);            
+            var roleUpdatedName = _mapper.Map<RoleUpdateResponse>(role);
 
             return roleUpdatedName;
         }
 
-        public async Task DeleteRoleAsync(string id)
+        public async ValueTask DeleteRoleAsync(string id)
         {
-            var role = await _roleRepository.GetAsync(id, nameof(Role));
+            var role = await _roleRepository.TryGetAsync(id, nameof(Role));
 
             if (role == null)
-                throw new Exception("Role not found.");
+                throw new ValidationException(ErrorMessages.ROLE_NOT_FOUND);
 
             await _roleRepository.DeleteAsync(role);
         }
-
     }
-
 }

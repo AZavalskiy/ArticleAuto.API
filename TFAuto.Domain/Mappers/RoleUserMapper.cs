@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using TFAuto.DAL.Entities;
-using TFAuto.Domain.Repository.Roles.DTO;
+using TFAuto.Domain.Services.Roles.DTO;
 
 namespace TFAuto.Domain;
 

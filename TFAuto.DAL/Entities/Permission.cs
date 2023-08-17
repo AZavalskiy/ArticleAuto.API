@@ -7,6 +7,5 @@
         public string RoleId { get; set; }
 
         public override string PartitionKey { get; set; } = nameof(Permission);
-
     }
 }
