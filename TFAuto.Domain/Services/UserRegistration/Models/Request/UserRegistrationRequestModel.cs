@@ -9,18 +9,19 @@ public class UserRegistrationRequestModel
     [Required]
     [DefaultValue("VasiaVasiliev")]
     [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = ErrorMessages.USER_VALID_USER_NAME)]
-    public string UserName 
+    public string UserName
     {
         get { return _userName; }
-        set {
+        set
+        {
             if (value.Length > 0)
-                {
-                    _userName = char.ToUpper(value[0]) + value.Substring(1);
-                }
+            {
+                _userName = char.ToUpper(value[0]) + value.Substring(1);
+            }
             else
-                {
-                    _userName = value;
-                }
+            {
+                _userName = value;
+            }
         }
     }
 

@@ -29,9 +29,9 @@ namespace TFAuto.Domain.Services.Roles
             return roleExistsList;
         }
 
-        public async ValueTask<RoleResponse> GetRoleAsync(string id)
+        public async ValueTask<RoleResponse> GetRoleAsync(Guid id)
         {
-            var role = await _roleRepository.TryGetAsync(id, nameof(Role));
+            var role = await _roleRepository.TryGetAsync(id.ToString(), nameof(Role));
 
             if (role == null)
                 throw new ValidationException(ErrorMessages.ROLE_NOT_FOUND);
@@ -55,9 +55,9 @@ namespace TFAuto.Domain.Services.Roles
             return newRoleResponse;
         }
 
-        public async ValueTask<RoleUpdateResponse> UpdateRoleAsync(string id, RoleUpdateRequest updatedRole)
+        public async ValueTask<RoleUpdateResponse> UpdateRoleAsync(Guid id, RoleUpdateRequest updatedRole)
         {
-            var role = await _roleRepository.TryGetAsync(id, nameof(Role));
+            var role = await _roleRepository.TryGetAsync(id.ToString(), nameof(Role));
 
             if (role == null)
                 throw new ValidationException(ErrorMessages.ROLE_NOT_FOUND);
@@ -69,9 +69,9 @@ namespace TFAuto.Domain.Services.Roles
             return updatedRoleResponse;
         }
 
-        public async ValueTask DeleteRoleAsync(string id)
+        public async ValueTask DeleteRoleAsync(Guid id)
         {
-            var role = await _roleRepository.TryGetAsync(id, nameof(Role));
+            var role = await _roleRepository.TryGetAsync(id.ToString(), nameof(Role));
 
             if (role == null)
                 throw new ValidationException(ErrorMessages.ROLE_NOT_FOUND);

@@ -35,7 +35,7 @@ namespace TFAuto.Web.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<ActionResult<RoleResponse>> GetRole([Required] Guid id)
         {
-            var role = await _roleRepository.GetRoleAsync(id.ToString());
+            var role = await _roleRepository.GetRoleAsync(id);
             return Ok(role);
         }
 
@@ -55,7 +55,7 @@ namespace TFAuto.Web.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<ActionResult<RoleUpdateResponse>> UpdateRole([Required] Guid id, [FromBody] RoleUpdateRequest updatedRole)
         {
-            var role = await _roleRepository.UpdateRoleAsync(id.ToString(), updatedRole);
+            var role = await _roleRepository.UpdateRoleAsync(id, updatedRole);
             return Ok(role);
         }
 
@@ -65,7 +65,7 @@ namespace TFAuto.Web.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<IActionResult> DeleteRole([Required] Guid id)
         {
-            await _roleRepository.DeleteRoleAsync(id.ToString());
+            await _roleRepository.DeleteRoleAsync(id);
 
             return NoContent();
         }

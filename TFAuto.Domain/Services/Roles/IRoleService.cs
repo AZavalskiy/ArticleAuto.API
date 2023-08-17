@@ -1,4 +1,5 @@
-﻿using TFAuto.Domain.Services.Roles.DTO;
+﻿using System;
+using TFAuto.Domain.Services.Roles.DTO;
 
 namespace TFAuto.Domain.Services.Roles
 {
@@ -6,12 +7,12 @@ namespace TFAuto.Domain.Services.Roles
     {
         ValueTask<IEnumerable<RoleListResponse>> GetRolesAsync();
 
-        ValueTask<RoleResponse> GetRoleAsync(string id);
+        ValueTask<RoleResponse> GetRoleAsync(Guid id);
 
         ValueTask<RoleCreateResponse> AddRoleAsync(RoleCreateRequest newRole);
 
-        ValueTask<RoleUpdateResponse> UpdateRoleAsync(string id, RoleUpdateRequest updatedRole);
+        ValueTask<RoleUpdateResponse> UpdateRoleAsync(Guid id, RoleUpdateRequest updatedRole);
 
-        ValueTask DeleteRoleAsync(string id);
+        ValueTask DeleteRoleAsync(Guid id);
     }
 }
