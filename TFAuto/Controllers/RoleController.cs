@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
+using TFAuto.Domain;
 using TFAuto.Domain.Services.Roles;
 using TFAuto.Domain.Services.Roles.DTO;
 using TFAuto.WebApp;
@@ -21,9 +22,9 @@ namespace TFAuto.Web.Controllers
         }
 
         [HttpGet]
-        [SwaggerResponse(200, "REQUEST_SUCCESSFUL", typeof(RoleListResponse))]
-        [SwaggerResponse(400, "BAD_REQUEST", typeof(ErrorDetails))]
-        [SwaggerResponse(500, "INTERNAL_SERVER_ERROR", typeof(ErrorDetails))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(RoleListResponse))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<ActionResult<RoleListResponse>> GetRoles()
         {   
             var roles = await _roleRepository.GetRolesAsync();
@@ -31,9 +32,9 @@ namespace TFAuto.Web.Controllers
         }
 
         [HttpPost]
-        [SwaggerResponse(200, "REQUEST_SUCCESSFUL", typeof(RoleCreateResponse))]
-        [SwaggerResponse(400, "BAD_REQUEST", typeof(ErrorDetails))]
-        [SwaggerResponse(500, "INTERNAL_SERVER_ERROR", typeof(ErrorDetails))]        
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(RoleCreateResponse))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError)]       
         public async ValueTask<ActionResult<RoleCreateResponse>> AddRole([FromBody] RoleCreateRequest newRole)
         {
             var role = await _roleRepository.AddRoleAsync(newRole);
@@ -41,22 +42,24 @@ namespace TFAuto.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        [SwaggerResponse(200, "REQUEST_SUCCESSFUL", typeof(RoleUpdateResponse))]
-        [SwaggerResponse(400, "BAD_REQUEST", typeof(ErrorDetails))]
-        [SwaggerResponse(500, "INTERNAL_SERVER_ERROR", typeof(ErrorDetails))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(RoleUpdateResponse))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<ActionResult<RoleUpdateResponse>> UpdateRole([Required] string id, [FromBody] RoleUpdateRequest updatedRole)
         {
             var role = await _roleRepository.UpdateRoleAsync(id, updatedRole);
             return Ok(role);
         }
 
-        [HttpDelete("{id}")]        
-        [SwaggerResponse(400, "BAD_REQUEST", typeof(ErrorDetails))]
-        [SwaggerResponse(500, "INTERNAL_SERVER_ERROR", typeof(ErrorDetails))]
+        [HttpDelete("{id}")]
+        [SwaggerResponse(StatusCodes.Status204NoContent)]
+        [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<IActionResult> DeleteRole([Required] string id)
         {
             await _roleRepository.DeleteRoleAsync(id);
-            return Ok();
+
+            return NoContent();
         }
     }
 }

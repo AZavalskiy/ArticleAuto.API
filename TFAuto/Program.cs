@@ -2,6 +2,7 @@ using TFAuto.Domain;
 using TFAuto.Domain.Seeds;
 using TFAuto.Domain.Services.Roles;
 using TFAuto.WebApp;
+using TFAuto.WebApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 

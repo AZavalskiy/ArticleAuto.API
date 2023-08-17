@@ -12,10 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Middleware\" />
-  </ItemGroup>
-
-  <ItemGroup>
 	<ProjectReference Include="..\TFAuto.Domain\TFAuto.Domain.csproj" />
   </ItemGroup>
 

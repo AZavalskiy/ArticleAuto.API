@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 
-namespace TFAuto.WebApp;
+namespace TFAuto.WebApp.Middleware;
 
 public class ExceptionHandlerMiddleware
 {

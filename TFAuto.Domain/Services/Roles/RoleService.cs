@@ -37,10 +37,10 @@ namespace TFAuto.Domain.Services.Roles
                 throw new ValidationException(ErrorMessages.ROLE_ALREADY_EXISTS);
 
             var roleMapped = _mapper.Map<Role>(newRole);
-            var result = await _roleRepository.CreateAsync(roleMapped);
-            var roleNameNew = _mapper.Map<RoleCreateResponse>(roleMapped);
+            var createdRole = await _roleRepository.CreateAsync(roleMapped);
+            var newRoleResponse = _mapper.Map<RoleCreateResponse>(roleMapped);
 
-            return roleNameNew;
+            return newRoleResponse;
         }
 
         public async ValueTask<RoleUpdateResponse> UpdateRoleAsync(string id, RoleUpdateRequest updatedRole)
@@ -52,9 +52,9 @@ namespace TFAuto.Domain.Services.Roles
 
             role.RoleName = updatedRole.RoleName;
             await _roleRepository.UpdateAsync(role);
-            var roleUpdatedName = _mapper.Map<RoleUpdateResponse>(role);
+            var updatedRoleResponse = _mapper.Map<RoleUpdateResponse>(role);
 
-            return roleUpdatedName;
+            return updatedRoleResponse;
         }
 
         public async ValueTask DeleteRoleAsync(string id)

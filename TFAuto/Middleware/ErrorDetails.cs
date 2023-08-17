@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace TFAuto.WebApp;
+namespace TFAuto.WebApp.Middleware;
 
 public class ErrorDetails
 {
