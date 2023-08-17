@@ -29,6 +29,18 @@ namespace TFAuto.Domain.Services.Roles
             return roleExistsList;
         }
 
+        public async ValueTask<RoleResponse> GetRoleAsync(string id)
+        {
+            var role = await _roleRepository.TryGetAsync(id, nameof(Role));
+
+            if (role == null)
+                throw new ValidationException(ErrorMessages.ROLE_NOT_FOUND);
+
+            var roleExists = _mapper.Map<RoleResponse>(role);
+
+            return roleExists;
+        }
+
         public async ValueTask<RoleCreateResponse> AddRoleAsync(RoleCreateRequest newRole)
         {
             var role = await _roleRepository.GetAsync(t => t.RoleName == newRole.RoleName);

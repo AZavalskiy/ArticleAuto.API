@@ -6,6 +6,8 @@ namespace TFAuto.Domain.Services.Roles
     {
         ValueTask<IEnumerable<RoleListResponse>> GetRolesAsync();
 
+        ValueTask<RoleResponse> GetRoleAsync(string id);
+
         ValueTask<RoleCreateResponse> AddRoleAsync(RoleCreateRequest newRole);
 
         ValueTask<RoleUpdateResponse> UpdateRoleAsync(string id, RoleUpdateRequest updatedRole);

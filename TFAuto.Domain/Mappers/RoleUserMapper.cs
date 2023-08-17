@@ -10,6 +10,8 @@ public class RoleUserMapper : Profile
     {
         CreateMap<Role, RoleListResponse>();
 
+        CreateMap<Role, RoleResponse>();
+
         CreateMap<RoleCreateRequest, Role>();
         CreateMap<Role, RoleCreateResponse>();
 

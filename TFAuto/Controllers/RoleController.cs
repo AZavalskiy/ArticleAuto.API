@@ -1,17 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
-using TFAuto.Domain;
 using TFAuto.Domain.Services.Roles;
 using TFAuto.Domain.Services.Roles.DTO;
-using TFAuto.WebApp;
 
 namespace TFAuto.Web.Controllers
 {
     [ApiController]
     [Produces("application/json")]
-    [Route("roles")]       
-    
+    [Route("roles")]
+
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleRepository;
@@ -26,38 +24,48 @@ namespace TFAuto.Web.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<ActionResult<RoleListResponse>> GetRoles()
-        {   
+        {
             var roles = await _roleRepository.GetRolesAsync();
             return Ok(roles);
+        }
+
+        [HttpGet("{id:Guid}")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(RoleResponse))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError)]
+        public async ValueTask<ActionResult<RoleResponse>> GetRole([Required] Guid id)
+        {
+            var role = await _roleRepository.GetRoleAsync(id.ToString());
+            return Ok(role);
         }
 
         [HttpPost]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(RoleCreateResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
-        [SwaggerResponse(StatusCodes.Status500InternalServerError)]       
+        [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<ActionResult<RoleCreateResponse>> AddRole([FromBody] RoleCreateRequest newRole)
         {
             var role = await _roleRepository.AddRoleAsync(newRole);
             return Ok(role);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:Guid}")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(RoleUpdateResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<RoleUpdateResponse>> UpdateRole([Required] string id, [FromBody] RoleUpdateRequest updatedRole)
+        public async ValueTask<ActionResult<RoleUpdateResponse>> UpdateRole([Required] Guid id, [FromBody] RoleUpdateRequest updatedRole)
         {
-            var role = await _roleRepository.UpdateRoleAsync(id, updatedRole);
+            var role = await _roleRepository.UpdateRoleAsync(id.ToString(), updatedRole);
             return Ok(role);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:Guid}")]
         [SwaggerResponse(StatusCodes.Status204NoContent)]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<IActionResult> DeleteRole([Required] string id)
+        public async ValueTask<IActionResult> DeleteRole([Required] Guid id)
         {
-            await _roleRepository.DeleteRoleAsync(id);
+            await _roleRepository.DeleteRoleAsync(id.ToString());
 
             return NoContent();
         }
