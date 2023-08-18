@@ -14,21 +14,21 @@ namespace TFAuto.Domain.Services.Email
             _configuration = configuration;
         }
 
-        public async Task SendConfirmationEmailAsync(string userEmail, string confirmationLink)
+        public async ValueTask SendConfirmationEmailAsync(string userEmail, string confirmationLink)
         {
             var subject = "Welcome to TFAuto! Confirm Your Email";
             var body = $"<a href='{confirmationLink}'>Click here to confirm your email</a>";
             await SendEmailAsync(userEmail, subject, body);
         }
 
-        public async Task SendPasswordResetEmailAsync(string userEmail, string resetLink)
+        public async ValueTask SendPasswordResetEmailAsync(string userEmail, string resetLink)
         {
             var subject = "Password Reset Request";
             var body = $"<a href='{resetLink}'>Click here to reset your password</a>";
             await SendEmailAsync(userEmail, subject, body);
         }
 
-        private async Task SendEmailAsync(string userEmail, string subject, string body)
+        private async ValueTask SendEmailAsync(string userEmail, string subject, string body)
         {
             var sendGridSettings = _configuration.GetSection("SendGridSettings").Get<SendGridSettings>();
 
@@ -43,9 +43,9 @@ namespace TFAuto.Domain.Services.Email
 
             var response = await client.SendEmailAsync(msg);
 
-            if (response.StatusCode != System.Net.HttpStatusCode.Accepted)            
+            if (response.StatusCode != System.Net.HttpStatusCode.Accepted)
                 throw new Exception("Failed to send email.");
-            
+
         }
     }
 }

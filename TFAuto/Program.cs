@@ -1,5 +1,8 @@
 using TFAuto.Domain;
 using TFAuto.Domain.Seeds;
+using TFAuto.Domain.Services.Email;
+using TFAuto.Domain.Services.PasswordReset;
+using TFAuto.Domain.Services.ResetPassword;
 using TFAuto.Domain.Services.Roles;
 using TFAuto.WebApp;
 using TFAuto.WebApp.Middleware;
@@ -10,9 +13,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 //Services
+builder.Services.AddScoped<EmailService, EmailService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<PasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<RoleInitializer>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddMemoryCache();
 
 //Mappers
 builder.Services.AddAutoMapper(typeof(UserMapper));
