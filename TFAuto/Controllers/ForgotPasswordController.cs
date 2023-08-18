@@ -23,7 +23,7 @@ namespace TFAuto.WebApp.Controllers
         }
 
         [HttpPost]
-        [SwaggerResponse(StatusCodes.Status204NoContent)]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(string))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
 

@@ -8,7 +8,7 @@ namespace TFAuto.Domain.ServiceConfigurations
 {
     public class PasswordResetSettings
     {
-        public int TokenExpiryMinutes { get; set; }
+        public double TokenExpiryMinutes { get; set; }
 
         public string ResetLinkBaseUrl { get; set; }
     }
