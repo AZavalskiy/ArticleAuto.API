@@ -1,4 +1,6 @@
-﻿using Microsoft.Azure.CosmosRepository;
+﻿using Microsoft.Azure.Cosmos.Linq;
+using Microsoft.Azure.CosmosRepository;
+using Microsoft.Azure.CosmosRepository.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
@@ -30,9 +32,7 @@ namespace TFAuto.Domain.Services.ResetPassword
 
         public async ValueTask<bool> RequestPasswordResetAsync(string email)
         {
-            //var user = await _userRepository.TryGetAsync(email);
-
-            var user = await _userRepository.GetAsync(u => u.Email == email);
+            var user = await _userRepository.TryGetAsync(email);                  
 
             if (user == null)
                 throw new ValidationException(ErrorMessages.INVALID_EMAIL);
