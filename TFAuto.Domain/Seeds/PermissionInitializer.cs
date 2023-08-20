@@ -1,0 +1,41 @@
+﻿using Microsoft.Azure.CosmosRepository;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TFAuto.DAL.Constant;
+using TFAuto.DAL.Entities;
+
+namespace TFAuto.Domain.Seeds;
+
+public class PermissionInitializer
+{
+    private readonly IRepository<Permission> _permissionRepository;
+
+    public PermissionInitializer(IRepository<Permission> permissionRepository)
+    {
+        _permissionRepository = permissionRepository;
+    }
+
+    public async Task InitializePermissions()
+    {
+        List<Permission> permissions = new()
+            {
+                new Permission () { Id = PermissionId.READ_ARTICLES, PermissionName = PermissionNames.READ_ARTICLES, RoleIds = new List<string> {RoleId.USER}},
+                new Permission () { Id = PermissionId.EDIT_ARTICLES, PermissionName = PermissionNames.EDIT_ARTICLES, RoleIds = new List<string> {RoleId.AUTHOR} },
+                new Permission () { Id = PermissionId.MANAGE_ARTICLES, PermissionName = PermissionNames.MANAGE_ARTICLES, RoleIds = new List<string> {RoleId.SUPER_ADMIN}},
+            };
+
+        foreach (var permission in permissions)
+        {
+            var existingRole = await _permissionRepository.ExistsAsync(permission.Id, nameof(Permission));
+
+            if (!existingRole)
+            {
+                await _permissionRepository.CreateAsync(permission);
+            }
+        }
+
+    }
+}

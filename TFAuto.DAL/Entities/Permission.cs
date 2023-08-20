@@ -4,7 +4,7 @@
     {
         public string PermissionName { get; set; }
 
-        public string RoleId { get; set; }
+        public List<string> RoleIds { get; set; }
 
         public override string PartitionKey { get; set; } = nameof(Permission);
     }
