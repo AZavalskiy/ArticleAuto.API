@@ -66,7 +66,6 @@ namespace TFAuto.Web.Controllers
         public async ValueTask<IActionResult> DeleteRole([Required] Guid id)
         {
             await _roleRepository.DeleteRoleAsync(id);
-
             return NoContent();
         }
     }
