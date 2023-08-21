@@ -13,7 +13,13 @@ public class ErrorMessages
     public const string ROLE_ALREADY_EXISTS = "Role already exists. Please input another name.";
 
     public const string INVALID_EMAIL = "That's not the right email.";
-    public const string NOT_MATCH_PASS = "Passwords don't match.";    
+    public const string NOT_MATCH_PASS = "Passwords don't match.";
     public const string INVALID_TOKEN = "The token is not valid. Repeat the password reset request.";
-}
 
+    public const string FILE_NOT_FOUND = "File not found.";
+    public const string FILE_ALREADY_EXISTS = "File already exists.";
+    public const string FILE_IS_EMPTY = "File is empty.";
+    public const string FILE_EXCEEDS_ALLOWED_SIZE = "The size of the uploaded File exceeds the allowed size.";
+    public const string FILE_INVALID_FORMAT = "The format of the File to be uploaded is invalid.";
+    public const string FILE_OR_REQUEST_INVALID = "Invalid request or file";
+}
