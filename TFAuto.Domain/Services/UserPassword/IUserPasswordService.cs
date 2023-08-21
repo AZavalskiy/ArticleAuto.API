@@ -4,8 +4,8 @@ namespace TFAuto.Domain.Services.UserPassword
 {
     public interface IUserPasswordService
     {
-        Task<bool> RequestPasswordResetAsync(ForgotPasswordRequest request);
+        ValueTask<bool> RequestPasswordResetAsync(ForgotPasswordRequest request);
 
-        Task<bool> ResetPasswordAsync(ResetPasswordRequest request);
+        ValueTask<bool> ResetPasswordAsync(ResetPasswordRequest request);
     }
 }

@@ -23,7 +23,7 @@ namespace TFAuto.WebApp.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(string))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+        public async ValueTask<IActionResult> ForgotPassword(ForgotPasswordRequest request)
         {
             await _userPasswordService.RequestPasswordResetAsync(request);
             return Ok("You may reset your password now.");
@@ -34,7 +34,7 @@ namespace TFAuto.WebApp.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(string))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        public async ValueTask<IActionResult> ResetPassword(ResetPasswordRequest request)
         {
             await _userPasswordService.ResetPasswordAsync(request);
             return Ok("Password successfuly reset.");

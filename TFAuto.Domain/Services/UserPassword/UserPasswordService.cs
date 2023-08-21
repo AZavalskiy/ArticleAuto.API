@@ -30,7 +30,7 @@ namespace TFAuto.Domain.Services.UserPassword
             _emailService = emailService;
         }
 
-        public async Task<bool> RequestPasswordResetAsync(ForgotPasswordRequest request)
+        public async ValueTask<bool> RequestPasswordResetAsync(ForgotPasswordRequest request)
         {
             var user = await _userRepository.GetAsync(t => t.Email == request.Email).FirstOrDefaultAsync();
 
@@ -42,14 +42,14 @@ namespace TFAuto.Domain.Services.UserPassword
             var сodeExpiration = DateTime.UtcNow.AddMinutes(passResetSettings.TokenExpiryMinutes);
 
             _memoryCache.Set(resetToken, new TokenInfo { UserId = user.Id, Expiration = сodeExpiration }, сodeExpiration);
-                        
+
             var resetLink = GeneratePasswordResetLink(resetToken);
             await _emailService.SendPasswordResetEmailAsync(request.Email, resetLink);
 
             return true;
         }
 
-        public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
+        public async ValueTask<bool> ResetPasswordAsync(ResetPasswordRequest request)
         {
             var tokenInfo = _memoryCache.Get<TokenInfo>(request.Token);
 
@@ -61,7 +61,6 @@ namespace TFAuto.Domain.Services.UserPassword
             user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
             await _userRepository.UpdateAsync(user);
             _memoryCache.Remove(request.Token);
-            _memoryCache.Remove(tokenInfo.Expiration);
 
             return true;
         }
