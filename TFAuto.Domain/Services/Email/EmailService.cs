@@ -23,7 +23,7 @@ namespace TFAuto.Domain.Services.Email
 
         public async ValueTask SendPasswordResetEmailAsync(string userEmail, string resetLink)
         {
-            var subject = "Password Reset Request";
+            var subject = "TFAuto. Password Reset Request";
             var body = $"<a href='{resetLink}'>Click here to reset your password</a>";
             await SendEmailAsync(userEmail, subject, body);
         }
@@ -45,7 +45,6 @@ namespace TFAuto.Domain.Services.Email
 
             if (response.StatusCode != System.Net.HttpStatusCode.Accepted)
                 throw new Exception("Failed to send email.");
-
         }
     }
 }

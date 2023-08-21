@@ -13,7 +13,7 @@ public class ErrorMessages
     public const string ROLE_ALREADY_EXISTS = "Role already exists. Please input another name.";
 
     public const string INVALID_EMAIL = "That's not the right email.";
-    public const string NOT_MATCH_PASS = "Passwords don't match.";
-    public const string INVALID_TOKEN = "Invalid token.";
+    public const string NOT_MATCH_PASS = "Passwords don't match.";    
+    public const string INVALID_TOKEN = "The token is not valid. Repeat the password reset request.";
 }
 
