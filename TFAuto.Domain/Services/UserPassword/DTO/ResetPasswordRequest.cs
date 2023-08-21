@@ -6,7 +6,7 @@ namespace TFAuto.Domain.Services.UserPassword.DTO
     public class ResetPasswordRequest
     {
         [Required]
-        public string Token { get; set; } = string.Empty;
+        public string Token { get; set; }
 
         [Required]
         [DefaultValue("abCdeF!$*159+")]

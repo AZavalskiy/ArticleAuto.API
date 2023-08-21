@@ -17,6 +17,7 @@ namespace TFAuto.Domain.Services.UserPassword
         private readonly IMemoryCache _memoryCache;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
+        private const int TOKEN_BYTE_LENGTH = 32;
 
         public UserPasswordService(
             IRepository<User> userRepository,
@@ -30,7 +31,7 @@ namespace TFAuto.Domain.Services.UserPassword
             _emailService = emailService;
         }
 
-        public async ValueTask<bool> RequestPasswordResetAsync(ForgotPasswordRequest request)
+        public async ValueTask<ForgotPasswordResponse> RequestPasswordResetAsync(ForgotPasswordRequest request)
         {
             var user = await _userRepository.GetAsync(t => t.Email == request.Email).FirstOrDefaultAsync();
 
@@ -46,10 +47,11 @@ namespace TFAuto.Domain.Services.UserPassword
             var resetLink = GeneratePasswordResetLink(resetToken);
             await _emailService.SendPasswordResetEmailAsync(request.Email, resetLink);
 
-            return true;
+            var response = new ForgotPasswordResponse { Message = "You may reset your password now." };
+            return response;
         }
 
-        public async ValueTask<bool> ResetPasswordAsync(ResetPasswordRequest request)
+        public async ValueTask<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request)
         {
             var tokenInfo = _memoryCache.Get<TokenInfo>(request.Token);
 
@@ -62,7 +64,8 @@ namespace TFAuto.Domain.Services.UserPassword
             await _userRepository.UpdateAsync(user);
             _memoryCache.Remove(request.Token);
 
-            return true;
+            var response = new ResetPasswordResponse { Message = "Password successfully reset." };
+            return response;
         }
 
         private string GeneratePasswordResetLink(string resetToken)
@@ -74,7 +77,7 @@ namespace TFAuto.Domain.Services.UserPassword
 
         private string GenerateResetToken()
         {
-            byte[] tokenBytes = new byte[32];
+            byte[] tokenBytes = new byte[TOKEN_BYTE_LENGTH];
             using (var rng = new RNGCryptoServiceProvider())
             {
                 rng.GetBytes(tokenBytes);
