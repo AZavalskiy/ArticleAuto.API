@@ -20,7 +20,7 @@ namespace TFAuto.WebApp.Controllers
 
         [HttpPost]
         [Route("forgot-password")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(string))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(ForgotPasswordResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<ActionResult<ForgotPasswordResponse>> ForgotPassword(ForgotPasswordRequest request)
@@ -31,7 +31,7 @@ namespace TFAuto.WebApp.Controllers
 
         [HttpPost]
         [Route("reset-password")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(string))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(ResetPasswordResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<ActionResult<ResetPasswordResponse>> ResetPassword(ResetPasswordRequest request)
