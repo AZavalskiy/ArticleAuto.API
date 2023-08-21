@@ -9,5 +9,5 @@ namespace TFAuto.Domain;
 public interface IAuthenticationService
 {
     public ValueTask<LoginResponse> LoginAsync(LoginRequest loginCredentials);
-    public ValueTask<LoginResponse> GetNewTokensByRefreshAsync(string refreshToken);
+    public ValueTask<LoginResponse> GetNewTokensByRefreshAsync(RefreshRequest refreshToken);
 }

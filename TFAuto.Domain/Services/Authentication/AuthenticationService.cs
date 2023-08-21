@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using TFAuto.TFAuto.DAL.Entities;
 using static TFAuto.Domain.JWTService;
@@ -36,10 +37,10 @@ public class AuthenticationService : IAuthenticationService
             TokenModel = token
         };
     }
-    public async ValueTask<LoginResponse> GetNewTokensByRefreshAsync(string refreshToken)
+    public async ValueTask<LoginResponse> GetNewTokensByRefreshAsync(RefreshRequest refreshToken)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var decodedToken = tokenHandler.ReadJwtToken(refreshToken);
+        var decodedToken = tokenHandler.ReadJwtToken(refreshToken.RefreshToken);
         var userIdFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
         var userEmailFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
         var isRefresh = decodedToken.Claims.FirstOrDefault(c => c.Type == "isRefresh")?.Value;

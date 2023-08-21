@@ -40,7 +40,7 @@ public class AuthenticationController : ControllerBase
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(LoginResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<LoginResponse>> GetNewTokensByRefreshAsync([FromBody] string refreshToken)
+    public async Task<ActionResult<LoginResponse>> GetNewTokensByRefreshAsync([FromBody] RefreshRequest refreshToken)
     {
         var createdLogin = await _userService.GetNewTokensByRefreshAsync(refreshToken);
         return Ok(createdLogin);
