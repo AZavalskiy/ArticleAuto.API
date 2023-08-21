@@ -2,5 +2,5 @@
 
 public interface IRegistrationService
 {
-    public Task<UserRegistrationResponseModel> RegisrateUser(UserRegistrationRequestModel userRequest);
+    public ValueTask<UserRegistrationResponseModel> RegisrateUser(UserRegistrationRequestModel userRequest);
 }
