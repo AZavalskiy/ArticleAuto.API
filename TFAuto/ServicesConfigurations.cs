@@ -3,11 +3,12 @@ using TFAuto.Domain.Seeds;
 using TFAuto.Domain.Services.Email;
 using TFAuto.Domain.Services.Roles;
 using TFAuto.Domain.Services.UserPassword;
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using TFAuto.WebApp.Middleware;
+using TFAuto.Domain.Services.Authentication;
 
 namespace TFAuto.WebApp;
 
@@ -22,6 +23,7 @@ public static class ServicesConfigurations
         AddServices(builder.Services);
         AddMappers(builder.Services);
     }
+
     private static void AddCosmosRepository(WebApplicationBuilder builder)
     {
         builder.Services.AddCosmosRepository(options =>
@@ -32,6 +34,7 @@ public static class ServicesConfigurations
             options.ContainerId = cosmosSettings.ContainerId;
         });
     }
+
     private static void AddCors(WebApplicationBuilder builder)
     {
         builder.Services.AddCors(options =>
@@ -42,6 +45,7 @@ public static class ServicesConfigurations
             });
         });
     }
+
     private static void AddSwagger(IServiceCollection serviceCollection)
     {
         serviceCollection.AddEndpointsApiExplorer();
@@ -56,7 +60,6 @@ public static class ServicesConfigurations
                 Type = SecuritySchemeType.ApiKey,
                 Scheme = "Bearer"
             });
-
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
                 {
@@ -73,6 +76,7 @@ public static class ServicesConfigurations
             });
         });
     }
+
     private static void ConfigureAuthentication(WebApplicationBuilder builder)
     {
         builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JWTSettings"));
@@ -94,12 +98,12 @@ public static class ServicesConfigurations
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(JWTSettings.IssuerSigningKey)
-                    ),
+                    Encoding.UTF8.GetBytes(JWTSettings.IssuerSigningKey)),
                 ValidateLifetime = true
             };
         });
     }
+
     private static void AddServices(IServiceCollection serviceCollection)
     {
         serviceCollection.AddScoped<IRegistrationService, RegistrationService>();
@@ -110,13 +114,14 @@ public static class ServicesConfigurations
         serviceCollection.AddScoped<PermissionInitializer>();
         serviceCollection.AddScoped<JWTService>();
         serviceCollection.AddScoped<IAuthenticationService, AuthenticationService>();
-
     }
+
     private static void AddMappers(IServiceCollection serviceCollection)
     {
         serviceCollection.AddAutoMapper(typeof(UserMapper));
         serviceCollection.AddAutoMapper(typeof(RoleUserMapper));
     }
+
     public static void InitializeSeeds(this WebApplication app)
     {
         using (var scope = app.Services.CreateScope())
@@ -128,6 +133,7 @@ public static class ServicesConfigurations
             permissionInitializer.InitializePermissions().Wait();
         }
     }
+
     public static void RegisterMiddleware(this WebApplication app)
     {
         app.UseMiddleware<ExceptionHandlerMiddleware>();

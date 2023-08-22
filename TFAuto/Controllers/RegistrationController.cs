@@ -20,12 +20,11 @@ public class RegistrationController : ControllerBase
     [SwaggerOperation(
      Summary = "Registers user",
      Description = "Returns saved user with user ID",
-     Tags = new[] { "Registration" }
-    )]
+     Tags = new[] { "Registration" })]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UserRegistrationResponseModel))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<UserRegistrationResponseModel>> RegisrateUser([FromBody] UserRegistrationRequestModel userRequest)
+    public async ValueTask<ActionResult<UserRegistrationResponseModel>> RegisrateUser([FromBody] UserRegistrationRequestModel userRequest)
     {
         var userResponse = await _registrationServics.RegisrateUser(userRequest);
         return Ok(userResponse);

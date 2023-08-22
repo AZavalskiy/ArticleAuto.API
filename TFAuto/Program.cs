@@ -23,7 +23,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-
 app.RegisterMiddleware();
 app.InitializeSeeds();
 

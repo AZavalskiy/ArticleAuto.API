@@ -1,11 +1,10 @@
 ﻿using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
-using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
+using TFAuto.Domain.Services.Authentication.Constants;
+using TFAuto.Domain.Services.Authentication.Models.Request;
 using TFAuto.TFAuto.DAL.Entities;
-using static TFAuto.Domain.JWTService;
-
-namespace TFAuto.Domain;
+namespace TFAuto.Domain.Services.Authentication;
 
 public class AuthenticationService : IAuthenticationService
 {
@@ -17,19 +16,23 @@ public class AuthenticationService : IAuthenticationService
         _repositoryUser = repositoryUser;
         _jwtService = jwtService;
     }
-    public async ValueTask<LoginResponse> LoginAsync(LoginRequest loginCredentials)
+
+    public async ValueTask<LoginResponse> LogInAsync(LoginRequest loginCredentials)
     {
         var user = await _repositoryUser.GetAsync(c => c.Email == loginCredentials.Email.ToLower()).FirstOrDefaultAsync();
+
         if (user == null)
         {
-            throw new ArgumentException("Invalid credentials");
+            throw new ArgumentException(ErrorMessages.LOG_IN_INVALID_CREDENTIALS);
         }
+
         var hashedPassword = user.Password;
 
         if (!BCrypt.Net.BCrypt.Verify(loginCredentials.Password, hashedPassword))
         {
-            throw new ArgumentException("Invalid credentials");
+            throw new ArgumentException(ErrorMessages.LOG_IN_INVALID_CREDENTIALS);
         }
+
         var token = await _jwtService.GenerateTokenMode(user.Id, user.Email);
         return new LoginResponse
         {
@@ -37,17 +40,20 @@ public class AuthenticationService : IAuthenticationService
             TokenModel = token
         };
     }
+
     public async ValueTask<LoginResponse> GetNewTokensByRefreshAsync(RefreshRequest refreshToken)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var decodedToken = tokenHandler.ReadJwtToken(refreshToken.RefreshToken);
-        var userIdFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-        var userEmailFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
-        var isRefresh = decodedToken.Claims.FirstOrDefault(c => c.Type == "isRefresh")?.Value;
+        var userIdFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.SUBJECT)?.Value;
+        var userEmailFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.EMAIL)?.Value;
+        var isRefresh = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.IS_REFRESH)?.Value;
+
         if (decodedToken.ValidTo < DateTime.UtcNow || bool.Parse(isRefresh) == false)
         {
-            throw new ArgumentException("Please enter credentials again");
+            throw new ArgumentException(ErrorMessages.LOG_IN_CREDENTIALS_AGAIN);
         }
+
         var token = await _jwtService.GenerateTokenMode(userIdFromClaims, userEmailFromClaims);
         return new LoginResponse
         {

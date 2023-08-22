@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TFAuto.Domain.Services.Authentication.Models.Request;
 
-namespace TFAuto.Domain;
+namespace TFAuto.Domain.Services.Authentication;
 
 public interface IAuthenticationService
 {
-    public ValueTask<LoginResponse> LoginAsync(LoginRequest loginCredentials);
+    public ValueTask<LoginResponse> LogInAsync(LoginRequest loginCredentials);
+
     public ValueTask<LoginResponse> GetNewTokensByRefreshAsync(RefreshRequest refreshToken);
 }
