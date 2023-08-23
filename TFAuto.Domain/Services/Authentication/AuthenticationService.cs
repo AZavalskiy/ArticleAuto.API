@@ -47,9 +47,9 @@ public class AuthenticationService : IAuthenticationService
         var decodedToken = tokenHandler.ReadJwtToken(refreshToken.RefreshToken);
         var userIdFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.SUBJECT)?.Value;
         var userEmailFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.EMAIL)?.Value;
-        var isRefresh = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.IS_REFRESH)?.Value;
+        var isAccess = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.IS_ACCESS)?.Value;
 
-        if (decodedToken.ValidTo < DateTime.UtcNow || bool.Parse(isRefresh) == false)
+        if (decodedToken.ValidTo < DateTime.UtcNow || bool.Parse(isAccess) == true)
         {
             throw new ArgumentException(ErrorMessages.LOG_IN_CREDENTIALS_AGAIN);
         }

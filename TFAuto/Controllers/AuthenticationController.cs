@@ -3,6 +3,8 @@ using Swashbuckle.AspNetCore.Annotations;
 using TFAuto.Domain;
 using TFAuto.Domain.Services.Authentication.Models.Request;
 using TFAuto.Domain.Services.Authentication;
+using System.Net;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TFAuto.WebApp.Controllers;
 

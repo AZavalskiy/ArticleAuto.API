@@ -12,7 +12,5 @@ public class User : BaseEntity
 
     public string RoleId { get; set; }
 
-    public List<string> PermissionIds { get; set; }
-
     public override string PartitionKey { get; set; } = nameof(User);
 }

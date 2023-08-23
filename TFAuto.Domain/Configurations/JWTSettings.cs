@@ -11,7 +11,7 @@ public class JWTSettings
     public string ValidIssuer { get; set; }
     public string ValidAudience { get; set; }
     public string IssuerSigningKey { get; set; }
-    public int AccessTokenLifetimeInHours { get; set; }
-    public int RefreshTokenLifetimeInHours { get; set; }
+    public int AccessTokenLifetimeInSeconds { get; set; }
+    public int RefreshTokenLifetimeInSeconds { get; set; }
 }
 

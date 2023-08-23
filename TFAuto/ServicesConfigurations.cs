@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using TFAuto.WebApp.Middleware;
 using TFAuto.Domain.Services.Authentication;
+using TFAuto.Domain.Services.Authentication.Constants;
 
 namespace TFAuto.WebApp;
 
@@ -79,27 +80,45 @@ public static class ServicesConfigurations
 
     private static void ConfigureAuthentication(WebApplicationBuilder builder)
     {
-        builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JWTSettings"));
+        builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("jwtSettings"));
 
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
         })
         .AddJwtBearer(options =>
         {
-            var JWTSettings = builder.Configuration.GetSection("JWTSettings").Get<JWTSettings>();
+            var jwtSettings = builder.Configuration.GetSection("jwtSettings").Get<JWTSettings>();
+            options.SaveToken = true;
+            options.RequireHttpsMetadata = true;
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidIssuer = JWTSettings.ValidIssuer,
-                ValidAudience = JWTSettings.ValidAudience,
+                ValidIssuer = jwtSettings.ValidIssuer,
+                ValidAudience = jwtSettings.ValidAudience,
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(JWTSettings.IssuerSigningKey)),
-                ValidateLifetime = true
+                    Encoding.UTF8.GetBytes(jwtSettings.IssuerSigningKey)),
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+            };
+            options.Events = new JwtBearerEvents
+            {
+               OnTokenValidated = context =>
+               {
+                   var isAccessClaim = context.Principal.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.IS_ACCESS)?.Value;
+                   
+                   if (!bool.Parse(isAccessClaim))
+                   {
+                       context.Fail("Unauthorized");
+                   }
+                   
+                   return Task.CompletedTask;
+               }
             };
         });
     }

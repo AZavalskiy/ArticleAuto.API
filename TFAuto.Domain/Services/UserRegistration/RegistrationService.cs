@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.CosmosRepository;
-using Microsoft.Azure.CosmosRepository.Extensions;
 using System.ComponentModel.DataAnnotations;
 using TFAuto.DAL.Constant;
 using TFAuto.DAL.Entities;
@@ -29,8 +28,6 @@ public class RegistrationService : IRegistrationService
         }
         User user = _mapper.Map<User>(userRequest);
         user.RoleId = RoleId.USER;
-        var usersRole = await _repositoryRole.GetAsync(c => c.Id == RoleId.USER).FirstOrDefaultAsync();
-        user.PermissionIds = usersRole.PermissionIds;
         User dataUser = await _repositoryUser.CreateAsync(user);
         UserRegistrationResponseModel responseUser = _mapper.Map<UserRegistrationResponseModel>(dataUser);
         return responseUser;
