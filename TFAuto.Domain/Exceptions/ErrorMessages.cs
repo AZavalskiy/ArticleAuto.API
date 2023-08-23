@@ -15,5 +15,8 @@ public class ErrorMessages
     public const string INVALID_EMAIL = "That's not the right email.";
     public const string NOT_MATCH_PASS = "Passwords don't match.";    
     public const string INVALID_TOKEN = "The token is not valid. Repeat the password reset request.";
+
+    public const string LOG_IN_INVALID_CREDENTIALS = "Invalid credentials";
+    public const string LOG_IN_CREDENTIALS_AGAIN = "Please enter credentials again";
 }
 

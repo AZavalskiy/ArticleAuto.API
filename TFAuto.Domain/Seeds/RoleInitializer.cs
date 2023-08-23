@@ -12,18 +12,13 @@ namespace TFAuto.Domain.Seeds
         {
             _roleRepository = roleRepository;
         }
-
         public async Task InitializeRoles()
         {
-            string userId = "c591984b-ccbc-484b-90db-01e390ffd141";
-            string authorId = "c591984b-ccbc-484b-90db-01e390ffd142";
-            string superAdminId = "c591984b-ccbc-484b-90db-01e390ffd143";
-
             List<Role> roles = new()
             {
-                new Role () { Id = superAdminId, RoleName = RoleNames.SUPER_ADMIN },
-                new Role () { Id = authorId, RoleName = RoleNames.AUTHOR },
-                new Role () { Id = userId, RoleName = RoleNames.USER },
+                new Role () { Id = RoleId.SUPER_ADMIN, RoleName = RoleNames.SUPER_ADMIN,  PermissionIds = new List<string> {PermissionId.MANAGE_ARTICLES}},
+                new Role () { Id = RoleId.AUTHOR, RoleName = RoleNames.AUTHOR, PermissionIds = new List<string> {PermissionId.EDIT_ARTICLES}},
+                new Role () { Id = RoleId.USER, RoleName = RoleNames.USER, PermissionIds = new List<string> {PermissionId.READ_ARTICLES}},
             };
 
             foreach (var role in roles)
@@ -35,7 +30,6 @@ namespace TFAuto.Domain.Seeds
                     await _roleRepository.CreateAsync(role);
                 }
             }
-
         }
     }
 }
