@@ -16,6 +16,9 @@ public class ErrorMessages
     public const string NOT_MATCH_PASS = "Passwords don't match.";
     public const string INVALID_TOKEN = "The token is not valid. Repeat the password reset request.";
 
+    public const string LOG_IN_INVALID_CREDENTIALS = "Invalid credentials";
+    public const string LOG_IN_CREDENTIALS_AGAIN = "Please enter credentials again";
+
     public const string FILE_NOT_FOUND = "File not found.";
     public const string FILE_ALREADY_EXISTS = "File already exists.";
     public const string FILE_IS_EMPTY = "File is empty.";
