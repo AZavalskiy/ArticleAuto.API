@@ -1,4 +1,4 @@
-﻿namespace TFAuto.Domain.ServiceConfigurations
+﻿namespace TFAuto.Domain.Configurations
 {
     public class SendGridSettings
     {

@@ -4,8 +4,6 @@ namespace TFAuto.Domain.Services.Blob
 {
     public interface IBlobService
     {
-        ValueTask<IEnumerable<GetFileListResponse>> GetListAsync();
-
         ValueTask<GetFileResponse> GetAsync(GetFileRequest request);
 
         ValueTask<UploadFileResponse> UploadAsync(UploadFileRequest request);

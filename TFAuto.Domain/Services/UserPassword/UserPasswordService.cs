@@ -4,7 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
-using TFAuto.Domain.ServiceConfigurations;
+using TFAuto.Domain.Configurations;
 using TFAuto.Domain.Services.Email;
 using TFAuto.Domain.Services.UserPassword.DTO;
 using TFAuto.TFAuto.DAL.Entities;

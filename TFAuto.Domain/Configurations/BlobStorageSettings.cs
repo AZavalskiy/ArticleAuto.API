@@ -1,8 +1,8 @@
-﻿namespace TFAuto.Domain.Service.Configurations
+﻿namespace TFAuto.Domain.Configurations
 {
     public class BlobStorageSettings
     {
-        public string ContainerId { get; set; }
+        public string ContainerName { get; set; }
 
         public string ContentType { get; set; }
 

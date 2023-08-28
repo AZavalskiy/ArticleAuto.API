@@ -6,12 +6,8 @@
 
         public string FileName { get; set; }
 
-        public string ContentType { get; set; }
+        public string Message { get; set; }
 
-        public Stream Content { get; set; }
-
-        public string Status { get; set; }
-
-        public bool Error { get; set; }
+        public bool Success { get; set; }
     }
 }

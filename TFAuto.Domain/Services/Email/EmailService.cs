@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using TFAuto.Domain.ServiceConfigurations;
+using TFAuto.Domain.Configurations;
 
 namespace TFAuto.Domain.Services.Email
 {
