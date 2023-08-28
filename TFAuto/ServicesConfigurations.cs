@@ -1,15 +1,16 @@
-﻿using TFAuto.Domain;
-using TFAuto.Domain.Seeds;
-using TFAuto.Domain.Services.Email;
-using TFAuto.Domain.Services.Roles;
-using TFAuto.Domain.Services.UserPassword;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using TFAuto.WebApp.Middleware;
+using TFAuto.DAL.Constant;
+using TFAuto.Domain;
+using TFAuto.Domain.Seeds;
 using TFAuto.Domain.Services.Authentication;
 using TFAuto.Domain.Services.Authentication.Constants;
+using TFAuto.Domain.Services.Email;
+using TFAuto.Domain.Services.Roles;
+using TFAuto.Domain.Services.UserPassword;
+using TFAuto.WebApp.Middleware;
 
 namespace TFAuto.WebApp;
 
@@ -20,6 +21,7 @@ public static class ServicesConfigurations
         AddCosmosRepository(builder);
         AddCors(builder);
         ConfigureAuthentication(builder);
+        ConfigureAuthorization(builder);
         AddSwagger(builder.Services);
         AddServices(builder.Services);
         AddMappers(builder.Services);
@@ -108,18 +110,39 @@ public static class ServicesConfigurations
             };
             options.Events = new JwtBearerEvents
             {
-               OnTokenValidated = context =>
-               {
-                   var isAccessClaim = context.Principal.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.IS_ACCESS)?.Value;
-                   
-                   if (!bool.Parse(isAccessClaim))
-                   {
-                       context.Fail("Unauthorized");
-                   }
-                   
-                   return Task.CompletedTask;
-               }
+                OnTokenValidated = context =>
+                {
+                    var isAccessClaim = context.Principal.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.IS_ACCESS)?.Value;
+
+                    if (!bool.Parse(isAccessClaim))
+                    {
+                        context.Fail("Unauthorized");
+                    }
+
+                    return Task.CompletedTask;
+                }
             };
+        });
+    }
+
+    private static void ConfigureAuthorization(WebApplicationBuilder builder)
+    {
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy(PermissionNames.EDIT_ARTICLES, policy =>
+            {
+                policy.RequireClaim(CustomClaimsType.PERMISSION_ID, PermissionId.EDIT_ARTICLES);
+            });
+
+            options.AddPolicy(PermissionNames.MANAGE_ARTICLES, policy =>
+            {
+                policy.RequireClaim(CustomClaimsType.PERMISSION_ID, PermissionId.MANAGE_ARTICLES);
+            });
+
+            options.AddPolicy(PermissionNames.MANAGE_ROLES, policy =>
+            {
+                policy.RequireClaim(CustomClaimsType.PERMISSION_ID, PermissionId.MANAGE_ROLES);
+            });
         });
     }
 

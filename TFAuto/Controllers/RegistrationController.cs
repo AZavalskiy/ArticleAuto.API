@@ -7,6 +7,7 @@ namespace TFAuto.WebApp;
 
 [ApiController]
 [Route("registration")]
+[Authorize]
 public class RegistrationController : ControllerBase
 {
     private readonly IRegistrationService _registrationServics;
