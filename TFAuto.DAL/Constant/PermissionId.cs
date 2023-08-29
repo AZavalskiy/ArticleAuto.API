@@ -7,4 +7,22 @@
         public const string MANAGE_ARTICLES = "c591984b-ccbc-484b-90db-01e390ffd133";
         public const string MANAGE_ROLES = "c591984b-ccbc-484b-90db-01e390ffd134";
     }
+
+    public static class PermissionIdList
+    {
+        static readonly List<string> _permissionList = new();
+
+        static PermissionIdList()
+        {
+            _permissionList.Add(PermissionId.READ_ARTICLES);
+            _permissionList.Add(PermissionId.EDIT_ARTICLES);
+            _permissionList.Add(PermissionId.MANAGE_ARTICLES);
+            _permissionList.Add(PermissionId.MANAGE_ROLES);
+        }
+
+        public static List<string> GetPermissions()
+        {
+            return _permissionList;
+        }
+    }
 }

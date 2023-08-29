@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TFAuto.Domain;
 
@@ -7,7 +6,6 @@ namespace TFAuto.WebApp;
 
 [ApiController]
 [Route("registration")]
-[Authorize]
 public class RegistrationController : ControllerBase
 {
     private readonly IRegistrationService _registrationServics;

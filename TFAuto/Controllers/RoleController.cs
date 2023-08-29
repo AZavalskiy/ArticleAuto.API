@@ -11,7 +11,7 @@ namespace TFAuto.Web.Controllers
     [ApiController]
     [Produces("application/json")]
     [Route("roles")]
-    [Authorize(Policy = PermissionNames.MANAGE_ARTICLES)]
+    [Authorize(Policy = PermissionId.MANAGE_ARTICLES)]
 
     public class RoleController : ControllerBase
     {

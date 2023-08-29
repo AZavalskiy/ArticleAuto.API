@@ -129,20 +129,13 @@ public static class ServicesConfigurations
     {
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy(PermissionNames.EDIT_ARTICLES, policy =>
+            foreach (var permissionId in PermissionIdList.GetPermissions())
             {
-                policy.RequireClaim(CustomClaimsType.PERMISSION_ID, PermissionId.EDIT_ARTICLES);
-            });
-
-            options.AddPolicy(PermissionNames.MANAGE_ARTICLES, policy =>
-            {
-                policy.RequireClaim(CustomClaimsType.PERMISSION_ID, PermissionId.MANAGE_ARTICLES);
-            });
-
-            options.AddPolicy(PermissionNames.MANAGE_ROLES, policy =>
-            {
-                policy.RequireClaim(CustomClaimsType.PERMISSION_ID, PermissionId.MANAGE_ROLES);
-            });
+                options.AddPolicy(permissionId, policy =>
+                {
+                    policy.RequireClaim(CustomClaimsType.PERMISSION_ID, permissionId);
+                });
+            }
         });
     }
 
