@@ -1,15 +1,18 @@
-﻿using TFAuto.Domain;
-using TFAuto.Domain.Seeds;
-using TFAuto.Domain.Services.Email;
-using TFAuto.Domain.Services.Roles;
-using TFAuto.Domain.Services.UserPassword;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using TFAuto.WebApp.Middleware;
+using TFAuto.Domain;
+using TFAuto.Domain.Configurations;
+using TFAuto.Domain.Seeds;
 using TFAuto.Domain.Services.Authentication;
 using TFAuto.Domain.Services.Authentication.Constants;
+using TFAuto.Domain.Services.Blob;
+using TFAuto.Domain.Services.Email;
+using TFAuto.Domain.Services.Roles;
+using TFAuto.Domain.Services.UserPassword;
+using TFAuto.WebApp.Configurations;
+using TFAuto.WebApp.Middleware;
 
 namespace TFAuto.WebApp;
 
@@ -18,6 +21,7 @@ public static class ServicesConfigurations
     public static void ConfigureServices(this WebApplicationBuilder builder)
     {
         AddCosmosRepository(builder);
+        AddBlobStorage(builder.Configuration);
         AddCors(builder);
         ConfigureAuthentication(builder);
         AddSwagger(builder.Services);
@@ -30,10 +34,17 @@ public static class ServicesConfigurations
         builder.Services.AddCosmosRepository(options =>
         {
             options.CosmosConnectionString = builder.Configuration.GetConnectionString("CosmosDBConnectionString");
+
             var cosmosSettings = builder.Configuration.GetSection("CosmosDBConnectionSettings").Get<CosmosDBConnectionSettings>();
             options.DatabaseId = cosmosSettings.DatabaseId;
             options.ContainerId = cosmosSettings.ContainerId;
         });
+    }
+
+    private static void AddBlobStorage(IConfiguration configuration)
+    {
+        configuration.GetConnectionString("BlobStorageConnectionString");
+        configuration.GetSection("BlobStorageSettings").Get<BlobStorageSettings>();
     }
 
     private static void AddCors(WebApplicationBuilder builder)
@@ -108,17 +119,17 @@ public static class ServicesConfigurations
             };
             options.Events = new JwtBearerEvents
             {
-               OnTokenValidated = context =>
-               {
-                   var isAccessClaim = context.Principal.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.IS_ACCESS)?.Value;
-                   
-                   if (!bool.Parse(isAccessClaim))
-                   {
-                       context.Fail("Unauthorized");
-                   }
-                   
-                   return Task.CompletedTask;
-               }
+                OnTokenValidated = context =>
+                {
+                    var isAccessClaim = context.Principal.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.IS_ACCESS)?.Value;
+
+                    if (!bool.Parse(isAccessClaim))
+                    {
+                        context.Fail("Unauthorized");
+                    }
+
+                    return Task.CompletedTask;
+                }
             };
         });
     }
@@ -133,6 +144,7 @@ public static class ServicesConfigurations
         serviceCollection.AddScoped<PermissionInitializer>();
         serviceCollection.AddScoped<JWTService>();
         serviceCollection.AddScoped<IAuthenticationService, AuthenticationService>();
+        serviceCollection.AddScoped<IBlobService, BlobService>();
     }
 
     private static void AddMappers(IServiceCollection serviceCollection)
