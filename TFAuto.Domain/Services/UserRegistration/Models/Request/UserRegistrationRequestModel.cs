@@ -9,6 +9,7 @@ public class UserRegistrationRequestModel
     [Required]
     [DefaultValue("VasiaVasiliev")]
     [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = ErrorMessages.USER_VALID_USER_NAME)]
+    [MaxLength(50, ErrorMessage = ErrorMessages.USER_VALID_USER_NAME_LENGTH)]
     public string UserName
     {
         get { return _userName; }
