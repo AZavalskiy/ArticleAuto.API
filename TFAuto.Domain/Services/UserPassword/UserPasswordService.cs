@@ -17,7 +17,6 @@ namespace TFAuto.Domain.Services.UserPassword
         private readonly IMemoryCache _memoryCache;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
-        private const int TOKEN_BYTE_LENGTH = 32;
 
         public UserPasswordService(
             IRepository<User> userRepository,
@@ -39,15 +38,16 @@ namespace TFAuto.Domain.Services.UserPassword
                 throw new ValidationException(ErrorMessages.INVALID_EMAIL);
 
             var passResetSettings = GetPasswordResetSettings();
-            var resetToken = GenerateResetToken();
-            var сodeExpiration = DateTime.UtcNow.AddMinutes(passResetSettings.TokenExpiryMinutes);
+
+            var resetToken = GenerateResetToken(passResetSettings.TokenLength);
+            var сodeExpiration = DateTime.UtcNow.AddSeconds(passResetSettings.TokenLifetimeInSeconds);
 
             _memoryCache.Set(resetToken, new TokenInfo { UserId = user.Id, Expiration = сodeExpiration }, сodeExpiration);
 
-            var resetLink = GeneratePasswordResetLink(resetToken);
-            await _emailService.SendPasswordResetEmailAsync(request.Email, resetLink);
+            var resetLink = GeneratePasswordResetLink();
+            await _emailService.SendPasswordResetEmailAsync(request.Email, resetToken, resetLink);
 
-            var response = new ForgotPasswordResponse { Message = "You may reset your password now." };
+            var response = new ForgotPasswordResponse { Message = "Email with further instructions has been successfully sent." };
             return response;
         }
 
@@ -68,21 +68,27 @@ namespace TFAuto.Domain.Services.UserPassword
             return response;
         }
 
-        private string GeneratePasswordResetLink(string resetToken)
+        private string GeneratePasswordResetLink()
         {
             var passResetSettings = GetPasswordResetSettings();
-            var resetLink = $"{passResetSettings.ResetLinkBaseUrl}?resetToken={resetToken}";
+
+            var resetLink = $"{passResetSettings.ResetLinkBaseUrl}";
+
             return resetLink;
         }
 
-        private string GenerateResetToken()
+        private string GenerateResetToken(int tokenLength)
         {
-            byte[] tokenBytes = new byte[TOKEN_BYTE_LENGTH];
-            using (var rng = new RNGCryptoServiceProvider())
+            var randomNumber = new byte[tokenLength];
+            string refreshToken = "";
+
+            using (var rng = RandomNumberGenerator.Create())
             {
-                rng.GetBytes(tokenBytes);
+                rng.GetBytes(randomNumber);
+                refreshToken = Convert.ToBase64String(randomNumber);
             }
-            return Convert.ToBase64String(tokenBytes);
+
+            return refreshToken;
         }
 
         private PasswordResetSettings GetPasswordResetSettings()
