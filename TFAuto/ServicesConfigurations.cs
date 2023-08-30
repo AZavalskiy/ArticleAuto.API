@@ -1,4 +1,21 @@
-﻿namespace TFAuto.WebApp;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
+using TFAuto.DAL.Constant;
+using TFAuto.Domain;
+using TFAuto.Domain.Configurations;
+using TFAuto.Domain.Seeds;
+using TFAuto.Domain.Services.Authentication;
+using TFAuto.Domain.Services.Authentication.Constants;
+using TFAuto.Domain.Services.Blob;
+using TFAuto.Domain.Services.Email;
+using TFAuto.Domain.Services.Roles;
+using TFAuto.Domain.Services.UserPassword;
+using TFAuto.WebApp.Configurations;
+using TFAuto.WebApp.Middleware;
+
+namespace TFAuto.WebApp;
 
 public static class ServicesConfigurations
 {
