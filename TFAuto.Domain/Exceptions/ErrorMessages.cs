@@ -25,4 +25,7 @@ public class ErrorMessages
     public const string FILE_EXCEEDS_ALLOWED_SIZE = "The size of the uploaded File exceeds the allowed size.";
     public const string FILE_INVALID_FORMAT = "The format of the File to be uploaded is invalid.";
     public const string FILE_OR_REQUEST_INVALID = "Invalid request or file";
+
+    public const string ARTICLE_MAX_TAGS_QUANTITY = "You can chose up to 5 tags";
+    public const string ARTICLE_NOT_FOUND = "Article not found";
 }

@@ -45,7 +45,7 @@ public class AuthenticationService : IAuthenticationService
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var decodedToken = tokenHandler.ReadJwtToken(refreshToken.RefreshToken);
-        var userIdFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.SUBJECT)?.Value;
+        var userIdFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID)?.Value;
         var userEmailFromClaims = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.EMAIL)?.Value;
         var isAccess = decodedToken.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.IS_ACCESS)?.Value;
 
