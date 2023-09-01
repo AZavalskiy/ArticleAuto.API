@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using TFAuto.DAL.Constant;
 using TFAuto.Domain;
 using TFAuto.Domain.Configurations;
 using TFAuto.Domain.Seeds;
@@ -24,6 +25,7 @@ public static class ServicesConfigurations
         AddBlobStorage(builder.Configuration);
         AddCors(builder);
         ConfigureAuthentication(builder);
+        ConfigureAuthorization(builder);
         AddSwagger(builder.Services);
         AddServices(builder.Services);
         AddMappers(builder.Services);
@@ -131,6 +133,20 @@ public static class ServicesConfigurations
                     return Task.CompletedTask;
                 }
             };
+        });
+    }
+
+    private static void ConfigureAuthorization(WebApplicationBuilder builder)
+    {
+        builder.Services.AddAuthorization(options =>
+        {
+            foreach (var permissionId in PermissionIdList.GetPermissions())
+            {
+                options.AddPolicy(permissionId, policy =>
+                {
+                    policy.RequireClaim(CustomClaimsType.PERMISSION_ID, permissionId);
+                });
+            }
         });
     }
 
