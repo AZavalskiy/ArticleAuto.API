@@ -20,7 +20,7 @@ public class UpdateArticleResponse
 
     public List<TagResponse> Tags { get; set; } = new List<TagResponse>();
 
-    public UpdateFileResponse ImageResponse { get; set; }
+    public UpdateFileResponse Image { get; set; }
 
     public string CreatedTimeUtc { get; set; }
 

@@ -1,9 +1,4 @@
 ﻿using Microsoft.Azure.CosmosRepository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TFAuto.DAL.Constant;
 using TFAuto.DAL.Entities;
 
@@ -24,6 +19,7 @@ public class PermissionInitializer
                 new Permission () { Id = PermissionId.READ_ARTICLES, PermissionName = PermissionNames.READ_ARTICLES, RoleIds = new List<string> {RoleId.USER}},
                 new Permission () { Id = PermissionId.EDIT_ARTICLES, PermissionName = PermissionNames.EDIT_ARTICLES, RoleIds = new List<string> {RoleId.AUTHOR}},
                 new Permission () { Id = PermissionId.MANAGE_ARTICLES, PermissionName = PermissionNames.MANAGE_ARTICLES, RoleIds = new List<string> {RoleId.SUPER_ADMIN}},
+                new Permission () { Id = PermissionId.MANAGE_ROLES, PermissionName = PermissionNames.MANAGE_ROLES, RoleIds = new List<string> {RoleId.SUPER_ADMIN}},
             };
 
         foreach (var permission in permissions)

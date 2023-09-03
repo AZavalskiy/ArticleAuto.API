@@ -4,6 +4,6 @@
     {
         ValueTask SendConfirmationEmailAsync(string userEmail, string confirmationLink);
 
-        ValueTask SendPasswordResetEmailAsync(string userEmail, string resetLink);
+        ValueTask SendPasswordResetEmailAsync(string userEmail, string resetToken, string resetLink);
     }
 }

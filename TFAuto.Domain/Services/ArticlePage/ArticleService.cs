@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
+using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using TFAuto.DAL.Entities.Article;
@@ -37,23 +38,23 @@ public class ArticleService : IArticleService
         var articleAuthorId = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID)?.Value;
         var articleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME)?.Value;
 
-        Article articleEntity = _mapper.Map<Article>(articleRequest);
+        Article articleEntityFromRequest = _mapper.Map<Article>(articleRequest);
 
         var articleAuthorEntity = await _repositoryUser.GetAsync(c => c.Id == articleAuthorId).FirstOrDefaultAsync();
-        articleAuthorEntity.ArticleIds.Add(articleEntity.Id);
+        articleAuthorEntity.ArticleIds.Add(articleEntityFromRequest.Id);
         await _repositoryUser.UpdateAsync(articleAuthorEntity);
 
-        List<Tag> tagsForArticleEntityList = await AllocateTags(articleRequest.Tags, articleEntity);
+        List<Tag> tagsForArticleEntityList = await AllocateTags(articleRequest.Tags, articleEntityFromRequest);
 
-        articleEntity.UserId = articleAuthorId;
-        articleEntity.UserName = articleAuthorName;
-        articleEntity.LastUserWhoUpdated = articleAuthorName;
-        articleEntity.ImageFileName = imageResponse.FileName;
+        articleEntityFromRequest.UserId = articleAuthorId;
+        articleEntityFromRequest.UserName = articleAuthorName;
+        articleEntityFromRequest.LastUserWhoUpdated = articleAuthorName;
+        articleEntityFromRequest.ImageFileName = imageResponse.FileName;
 
-        var dataArticleEntity = await _repositoryArticle.CreateAsync(articleEntity);
+        var dataArticleEntity = await _repositoryArticle.CreateAsync(articleEntityFromRequest);
 
         CreateArticleResponse articleResponse = _mapper.Map<CreateArticleResponse>(dataArticleEntity);
-        articleResponse.ImageResponse = imageResponse;
+        articleResponse.Image = imageResponse;
 
         foreach (Tag tag in tagsForArticleEntityList)
         {
@@ -66,23 +67,30 @@ public class ArticleService : IArticleService
 
     public async ValueTask<UpdateArticleResponse> UpdateArticleAsync(string articleId, UpdateArticleRequest articleRequest)
     {
-        var lastArticleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME)?.Value;
-
-        Article articleEntity = _mapper.Map<Article>(articleRequest);
+        Article articleEntityFromRequest = _mapper.Map<Article>(articleRequest);
 
         var existingArticleEntity = await _repositoryArticle.GetAsync(c => c.Id == articleId).FirstOrDefaultAsync();
 
         if (existingArticleEntity == null)
             throw new ValidationException(ErrorMessages.ARTICLE_NOT_FOUND);
 
+        foreach (var existingArticleEntityTagId in existingArticleEntity.TagIds)
+        {
+            var tagUpdatedByArticle = await _repositoryTag.GetAsync(c => c.Id == existingArticleEntityTagId).FirstOrDefaultAsync();
+            tagUpdatedByArticle.ArticleIds.Remove(existingArticleEntity.Id);
+            await _repositoryTag.UpdateAsync(tagUpdatedByArticle);
+        }
+
         existingArticleEntity.TagIds.Clear();
+
         List<Tag> newArticleEntityTagsList = await AllocateTags(articleRequest.Tags, existingArticleEntity);
 
+        var lastArticleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME)?.Value;
         var imageResponse = await _imageService.UpdateAsync(existingArticleEntity.ImageFileName, articleRequest.Image);
 
-        existingArticleEntity.Name = articleEntity.Name;
-        existingArticleEntity.Description = articleEntity.Description;
-        existingArticleEntity.Text = articleEntity.Text;
+        existingArticleEntity.Name = articleEntityFromRequest.Name;
+        existingArticleEntity.Description = articleEntityFromRequest.Description;
+        existingArticleEntity.Text = articleEntityFromRequest.Text;
         existingArticleEntity.LastUserWhoUpdated = lastArticleAuthorName;
         existingArticleEntity.ImageFileName = imageResponse.FileName;
 
@@ -96,38 +104,49 @@ public class ArticleService : IArticleService
             articleResponse.Tags.Add(tagResponse);
         }
 
-        articleResponse.ImageResponse = imageResponse;
+        articleResponse.Image = imageResponse;
 
         return articleResponse;
     }
 
     private async ValueTask<List<Tag>> AllocateTags(string tagString, Article articleEntity)
     {
-        string tagStringPattern = @"#[A-Za-z0-9]+";
-        MatchCollection selectedTagsFromString = Regex.Matches(tagString.ToLower(), tagStringPattern);
         List<Tag> tagsForArticleEntityList = new();
 
-        foreach (Match selectedTagFromString in selectedTagsFromString)
+        if (!tagString.IsNullOrEmpty())
         {
-            string selrctedTagNameFromString = selectedTagFromString.Value;
-            var existingEntityTag = await _repositoryTag.GetAsync(c => c.Name == selrctedTagNameFromString).FirstOrDefaultAsync();
+            string tagStringPattern = @"#[A-Za-z0-9]+";
+            MatchCollection selectedTagsFromString = Regex.Matches(tagString.ToLower(), tagStringPattern);
 
-            if (existingEntityTag == null)
+            if (selectedTagsFromString.Count > 5)
+                throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
+
+            foreach (Match selectedTagFromString in selectedTagsFromString)
             {
-                var newTag = new Tag
+                string selrctedTagNameFromString = selectedTagFromString.Value;
+
+                var existingEntityTag = await _repositoryTag.GetAsync(c => c.Name == selrctedTagNameFromString).FirstOrDefaultAsync();
+
+                if (existingEntityTag == null)
                 {
-                    Name = selrctedTagNameFromString,
-                    ArticleIds = new List<string> { articleEntity.Id }
-                };
-                await _repositoryTag.CreateAsync(newTag);
+                    var newTag = new Tag
+                    {
+                        Name = selrctedTagNameFromString,
+                        ArticleIds = new List<string> { articleEntity.Id }
+                    };
+                    await _repositoryTag.CreateAsync(newTag);
 
-                articleEntity.TagIds.Add(newTag.Id);
-                tagsForArticleEntityList.Add(newTag);
-            }
-            else
-            {
-                articleEntity.TagIds.Add(existingEntityTag.Id);
-                tagsForArticleEntityList.Add(existingEntityTag);
+                    articleEntity.TagIds.Add(newTag.Id);
+                    tagsForArticleEntityList.Add(newTag);
+                }
+                else
+                {
+                    articleEntity.TagIds.Add(existingEntityTag.Id);
+                    tagsForArticleEntityList.Add(existingEntityTag);
+
+                    existingEntityTag.ArticleIds.Add(articleEntity.Id);
+                    await _repositoryTag.UpdateAsync(existingEntityTag);
+                }
             }
         }
 
