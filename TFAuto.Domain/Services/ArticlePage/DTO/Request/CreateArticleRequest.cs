@@ -10,17 +10,17 @@ public class CreateArticleRequest
     public IFormFile Image { get; set; }
 
     [Required]
-    [DefaultValue("Jokes about cars")]
+    [DefaultValue("Name of the article")]
     public string Name { get; set; }
 
     [Required]
-    [DefaultValue("Exploring the Humorous World of Car Jokes")]
+    [DefaultValue("Description of the article")]
     public string Description { get; set; }
 
     [Required]
-    [DefaultValue("The End.")]
+    [DefaultValue("Text of the article")]
     public string Text { get; set; }
 
-    [DefaultValue("#ilikecars #carsarecool #bmw #ladasedan #bonnet")]
+    [DefaultValue("#tag1 #tag2 #tag3")]
     public string Tags { get; set; }
 }

@@ -9,17 +9,17 @@ public class UpdateArticleRequest
     public IFormFile Image { get; set; }
 
     [Required]
-    [DefaultValue("Jokes about cars")]
+    [DefaultValue("New name of the article")]
     public string Name { get; set; }
 
     [Required]
-    [DefaultValue("Exploring the Humorous World of Car Jokes")]
+    [DefaultValue("New description of the article")]
     public string Description { get; set; }
 
     [Required]
-    [DefaultValue("The End.")]
+    [DefaultValue("New text of the article")]
     public string Text { get; set; }
 
-    [DefaultValue("#ilikecars #carsarecool #bmw #ladasedan")]
+    [DefaultValue("#tag4 #tag5 #tag6")]
     public string Tags { get; set; }
 }
