@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
+using TFAuto.DAL.Constant;
 using TFAuto.Domain.Services.Roles;
 using TFAuto.Domain.Services.Roles.DTO;
 
@@ -9,6 +11,7 @@ namespace TFAuto.Web.Controllers
     [ApiController]
     [Produces("application/json")]
     [Route("roles")]
+    [Authorize(Policy = PermissionId.MANAGE_ARTICLES)]
 
     public class RoleController : ControllerBase
     {

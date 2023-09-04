@@ -21,10 +21,10 @@ namespace TFAuto.Domain.Services.Email
             await SendEmailAsync(userEmail, subject, body);
         }
 
-        public async ValueTask SendPasswordResetEmailAsync(string userEmail, string resetLink)
+        public async ValueTask SendPasswordResetEmailAsync(string userEmail, string resetToken, string resetLink)
         {
             var subject = "TFAuto. Password Reset Request";
-            var body = $"<a href='{resetLink}'>Click here to reset your password</a>";
+            var body = $"<p>Use the following code to reset your password: <strong>{resetToken}</strong></p><p><a href='{resetLink}'>Click here to reset your password</a></p>";
             await SendEmailAsync(userEmail, subject, body);
         }
 

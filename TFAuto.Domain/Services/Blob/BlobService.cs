@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
 using TFAuto.Domain.Configurations;
@@ -21,9 +22,9 @@ namespace TFAuto.Domain.Services.Blob
             _container = blobServiceClient.GetBlobContainerClient(blobStorageSettings.ContainerName);
         }
 
-        public async ValueTask<GetFileResponse> GetAsync(GetFileRequest request)
+        public async ValueTask<GetFileResponse> GetAsync(string request)
         {
-            BlobClient blob = _container.GetBlobClient(request.FileName);
+            BlobClient blob = _container.GetBlobClient(request);
 
             bool exists = await blob.ExistsAsync();
 
@@ -47,21 +48,21 @@ namespace TFAuto.Domain.Services.Blob
             return response;
         }
 
-        public async ValueTask<UploadFileResponse> UploadAsync(UploadFileRequest request)
+        public async ValueTask<UploadFileResponse> UploadAsync(IFormFile request)
         {
-            if (request == null || request.File == null)
+            if (request == null)
                 throw new ArgumentException(ErrorMessages.FILE_OR_REQUEST_INVALID);
 
             var blobStorageSettings = GetBlobStorageSettings();
 
-            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(request.File.FileName);
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(request.FileName);
             string storageFileName = $"{fileNameWithoutExtension}-{Guid.NewGuid()}";
 
             BlobClient blob = _container.GetBlobClient(storageFileName);
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                await request.File.CopyToAsync(memoryStream);
+                await request.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
 
                 var blobUploadOptions = new BlobUploadOptions
@@ -77,8 +78,54 @@ namespace TFAuto.Domain.Services.Blob
 
             UploadFileResponse response = new()
             {
-                Message = $"File {request.File.FileName} uploaded Successfully",
+                Message = $"File {request.FileName} uploaded Successfully",
                 Success = true,
+                Uri = blob.Uri.AbsoluteUri,
+                FileName = blob.Name
+            };
+
+            return response;
+        }
+
+        public async ValueTask<UpdateFileResponse> UpdateAsync(string existingFileNameRequest, IFormFile updatedFileRequest)
+        {
+            BlobClient blob = _container.GetBlobClient(existingFileNameRequest);
+
+            bool exists = await blob.ExistsAsync();
+
+            if (!exists)
+                throw new ValidationException(ErrorMessages.FILE_NOT_FOUND);
+
+            if (updatedFileRequest != null)
+            {
+                var blobStorageSettings = GetBlobStorageSettings();
+
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(updatedFileRequest.FileName);
+                string storageFileName = $"{fileNameWithoutExtension}-{Guid.NewGuid()}";
+
+                await blob.DeleteAsync();
+
+                blob = _container.GetBlobClient(storageFileName);
+
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    await updatedFileRequest.CopyToAsync(memoryStream);
+                    memoryStream.Position = 0;
+
+                    var blobUploadOptions = new BlobUploadOptions
+                    {
+                        HttpHeaders = new BlobHttpHeaders
+                        {
+                            ContentType = blobStorageSettings.ContentType
+                        }
+                    };
+
+                    await blob.UploadAsync(memoryStream, blobUploadOptions);
+                }
+            }
+
+            UpdateFileResponse response = new()
+            {
                 Uri = blob.Uri.AbsoluteUri,
                 FileName = blob.Name
             };
@@ -113,9 +160,9 @@ namespace TFAuto.Domain.Services.Blob
             return message;
         }
 
-        public async ValueTask<DeleteFileResponse> DeleteAsync(DeleteFileRequest request)
+        public async ValueTask<DeleteFileResponse> DeleteAsync(string request)
         {
-            BlobClient blob = _container.GetBlobClient(request.FileName);
+            BlobClient blob = _container.GetBlobClient(request);
 
             bool exists = await blob.ExistsAsync();
 
@@ -124,7 +171,7 @@ namespace TFAuto.Domain.Services.Blob
 
             await blob.DeleteAsync();
 
-            var message = new DeleteFileResponse { Success = true, Message = $"File: {request.FileName} has been successfully deleted." };
+            var message = new DeleteFileResponse { Success = true, Message = $"File: {request} has been successfully deleted." };
             return message;
         }
 

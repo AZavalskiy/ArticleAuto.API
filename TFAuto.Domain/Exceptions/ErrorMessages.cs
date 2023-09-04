@@ -3,7 +3,7 @@
 public class ErrorMessages
 {
     public const string USER_VALID_USER_NAME = "Only alphabetic letters are allowed for a username!";
-    public const string USER_VALID_SURNAME = "Only alphabetic letters are allowed for a surname!";
+    public const string USER_VALID_USER_NAME_LENGTH = "Username must contain no more than 50 alphabetic characters!";
     public const string USER_VALID_PASSWORD = "Password must contain at least 8 characters with at least one lowercase letter, one uppercase letter, one digit, and one special character (!, @, #, $, %, ^, &, +, =, -)!";
     public const string USER_VALID_REPEAT_PASSWORD = "Passwords do not match!";
     public const string USER_EXISTS_BY_EMAIL = "An user with the same email already exists!";
@@ -25,4 +25,7 @@ public class ErrorMessages
     public const string FILE_EXCEEDS_ALLOWED_SIZE = "The size of the uploaded File exceeds the allowed size.";
     public const string FILE_INVALID_FORMAT = "The format of the File to be uploaded is invalid.";
     public const string FILE_OR_REQUEST_INVALID = "Invalid request or file";
+
+    public const string ARTICLE_MAX_TAGS_QUANTITY = "You can chose up to 5 tags";
+    public const string ARTICLE_NOT_FOUND = "Article not found";
 }
