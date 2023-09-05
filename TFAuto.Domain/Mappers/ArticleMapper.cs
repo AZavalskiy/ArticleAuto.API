@@ -11,6 +11,7 @@ public class ArticleMapper : Profile
     {
         CreateMap<CreateArticleRequest, Article>();
         CreateMap<Article, CreateArticleResponse>();
+
         CreateMap<Tag, TagResponse>();
 
         CreateMap<UpdateArticleRequest, Article>();

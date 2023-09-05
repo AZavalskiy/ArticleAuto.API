@@ -5,14 +5,14 @@ namespace TFAuto.Domain.Services.Blob
 {
     public interface IBlobService
     {
-        ValueTask<GetFileResponse> GetAsync(string request);
+        ValueTask<GetFileResponse> GetAsync(string requestFileName);
 
-        ValueTask<UploadFileResponse> UploadAsync(IFormFile request);
+        ValueTask<UploadFileResponse> UploadAsync(IFormFile uploadedFile);
 
-        ValueTask<DownloadFileResponse> DownloadAsync(DownloadFileRequest request);
+        ValueTask<DownloadFileResponse> DownloadAsync(string requestFileName);
 
-        ValueTask<DeleteFileResponse> DeleteAsync(string request);
+        ValueTask<DeleteFileResponse> DeleteAsync(string requestFileName);
 
-        ValueTask<UpdateFileResponse> UpdateAsync(string oldFileNameRequest, IFormFile request);
+        ValueTask<UploadFileResponse> UpdateAsync(string oldFileName, IFormFile request);
     }
 }

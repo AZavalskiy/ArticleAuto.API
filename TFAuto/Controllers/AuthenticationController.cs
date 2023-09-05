@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TFAuto.Domain;
-using TFAuto.Domain.Services.Authentication.Models.Request;
 using TFAuto.Domain.Services.Authentication;
-using System.Net;
-using Microsoft.AspNetCore.Authorization;
+using TFAuto.Domain.Services.Authentication.Models.Request;
 
 namespace TFAuto.WebApp.Controllers;
 
@@ -21,8 +19,8 @@ public class AuthenticationController : ControllerBase
 
     [HttpPost("login")]
     [SwaggerOperation(
-     Summary = "Login authentication",
-     Description = "Logs in with user's credentials and returns access and refresh tokens for authentication")]
+    Summary = "Login authentication",
+    Description = "Logs in with user's credentials and returns access and refresh tokens for authentication")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(LoginResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]

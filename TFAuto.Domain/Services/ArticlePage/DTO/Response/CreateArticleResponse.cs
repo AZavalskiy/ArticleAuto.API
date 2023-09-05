@@ -18,7 +18,7 @@ public class CreateArticleResponse
 
     public string LastUserWhoUpdated { get; set; }
 
-    public List<TagResponse> Tags { get; set; } = new List<TagResponse>();
+    public List<TagResponse> Tags { get; set; } = new();
 
     public UploadFileResponse Image { get; set; }
 

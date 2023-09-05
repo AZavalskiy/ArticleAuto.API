@@ -18,9 +18,9 @@ public class UpdateArticleResponse
 
     public string LastUserWhoUpdated { get; set; }
 
-    public List<TagResponse> Tags { get; set; } = new List<TagResponse>();
+    public List<TagResponse> Tags { get; set; } = new();
 
-    public UpdateFileResponse Image { get; set; }
+    public UploadFileResponse Image { get; set; }
 
     public string CreatedTimeUtc { get; set; }
 

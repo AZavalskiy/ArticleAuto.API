@@ -10,7 +10,7 @@
 
         public string MaxPostImageFileSize { get; set; }
 
-        public string AllowedFileExtensions { get; set; }
+        public string[] AllowedFileExtensions { get; set; }
 
         public string DowloadFileExtensions { get; set; }
     }

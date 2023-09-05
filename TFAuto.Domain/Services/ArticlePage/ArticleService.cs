@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using TFAuto.DAL.Entities.Article;
+using TFAuto.Domain.Exceptions;
 using TFAuto.Domain.Services.ArticlePage.DTO.Request;
 using TFAuto.Domain.Services.ArticlePage.DTO.Response;
 using TFAuto.Domain.Services.Authentication.Constants;
@@ -34,9 +35,8 @@ public class ArticleService : IArticleService
 
     public async ValueTask<CreateArticleResponse> CreateArticleAsync(CreateArticleRequest articleRequest)
     {
-        var imageResponse = await _imageService.UploadAsync(articleRequest.Image);
-        var articleAuthorId = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID)?.Value;
-        var articleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME)?.Value;
+        var articleAuthorId = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID).Value;
+        var articleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME).Value;
 
         Article articleEntityFromRequest = _mapper.Map<Article>(articleRequest);
 
@@ -46,6 +46,7 @@ public class ArticleService : IArticleService
 
         List<Tag> tagsForArticleEntityList = await AllocateTags(articleRequest.Tags, articleEntityFromRequest);
 
+        var imageResponse = await _imageService.UploadAsync(articleRequest.Image);
         articleEntityFromRequest.UserId = articleAuthorId;
         articleEntityFromRequest.UserName = articleAuthorName;
         articleEntityFromRequest.LastUserWhoUpdated = articleAuthorName;
@@ -65,14 +66,14 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
-    public async ValueTask<UpdateArticleResponse> UpdateArticleAsync(string articleId, UpdateArticleRequest articleRequest)
+    public async ValueTask<UpdateArticleResponse> UpdateArticleAsync(Guid articleId, UpdateArticleRequest articleRequest)
     {
         Article articleEntityFromRequest = _mapper.Map<Article>(articleRequest);
 
-        var existingArticleEntity = await _repositoryArticle.GetAsync(c => c.Id == articleId).FirstOrDefaultAsync();
+        var existingArticleEntity = await _repositoryArticle.GetAsync(c => c.Id == articleId.ToString()).FirstOrDefaultAsync();
 
         if (existingArticleEntity == null)
-            throw new ValidationException(ErrorMessages.ARTICLE_NOT_FOUND);
+            throw new ArgumentException(ErrorMessages.ARTICLE_NOT_FOUND);
 
         foreach (var existingArticleEntityTagId in existingArticleEntity.TagIds)
         {
@@ -85,7 +86,7 @@ public class ArticleService : IArticleService
 
         List<Tag> newArticleEntityTagsList = await AllocateTags(articleRequest.Tags, existingArticleEntity);
 
-        var lastArticleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME)?.Value;
+        var lastArticleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME).Value;
         var imageResponse = await _imageService.UpdateAsync(existingArticleEntity.ImageFileName, articleRequest.Image);
 
         existingArticleEntity.Name = articleEntityFromRequest.Name;
@@ -113,40 +114,42 @@ public class ArticleService : IArticleService
     {
         List<Tag> tagsForArticleEntityList = new();
 
-        if (!tagString.IsNullOrEmpty())
+        if (tagString.IsNullOrEmpty())
         {
-            string tagStringPattern = @"#[A-Za-z0-9]+";
-            MatchCollection selectedTagsFromString = Regex.Matches(tagString.ToLower(), tagStringPattern);
+            return tagsForArticleEntityList;
+        }
 
-            if (selectedTagsFromString.Count > 5)
-                throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
+        string tagStringPattern = @"#[A-Za-z0-9]+";
+        MatchCollection selectedTagsFromString = Regex.Matches(tagString.ToLower(), tagStringPattern);
 
-            foreach (Match selectedTagFromString in selectedTagsFromString)
+        if (selectedTagsFromString.Count > Limitations.ARTICLE_MAX_QUANTITY_OF_TAGS)
+            throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
+
+        foreach (Match selectedTagFromString in selectedTagsFromString)
+        {
+            string selectedTagNameFromString = selectedTagFromString.Value;
+
+            var existingEntityTag = await _repositoryTag.GetAsync(c => c.Name == selectedTagNameFromString).FirstOrDefaultAsync();
+
+            if (existingEntityTag == null)
             {
-                string selrctedTagNameFromString = selectedTagFromString.Value;
-
-                var existingEntityTag = await _repositoryTag.GetAsync(c => c.Name == selrctedTagNameFromString).FirstOrDefaultAsync();
-
-                if (existingEntityTag == null)
+                var newTag = new Tag
                 {
-                    var newTag = new Tag
-                    {
-                        Name = selrctedTagNameFromString,
-                        ArticleIds = new List<string> { articleEntity.Id }
-                    };
-                    await _repositoryTag.CreateAsync(newTag);
+                    Name = selectedTagNameFromString,
+                    ArticleIds = new List<string> { articleEntity.Id }
+                };
+                await _repositoryTag.CreateAsync(newTag);
 
-                    articleEntity.TagIds.Add(newTag.Id);
-                    tagsForArticleEntityList.Add(newTag);
-                }
-                else
-                {
-                    articleEntity.TagIds.Add(existingEntityTag.Id);
-                    tagsForArticleEntityList.Add(existingEntityTag);
+                articleEntity.TagIds.Add(newTag.Id);
+                tagsForArticleEntityList.Add(newTag);
+            }
+            else
+            {
+                articleEntity.TagIds.Add(existingEntityTag.Id);
+                tagsForArticleEntityList.Add(existingEntityTag);
 
-                    existingEntityTag.ArticleIds.Add(articleEntity.Id);
-                    await _repositoryTag.UpdateAsync(existingEntityTag);
-                }
+                existingEntityTag.ArticleIds.Add(articleEntity.Id);
+                await _repositoryTag.UpdateAsync(existingEntityTag);
             }
         }
 

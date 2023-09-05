@@ -7,5 +7,5 @@ public interface IArticleService
 {
     public ValueTask<CreateArticleResponse> CreateArticleAsync(CreateArticleRequest articleRequest);
 
-    public ValueTask<UpdateArticleResponse> UpdateArticleAsync(string articleId, UpdateArticleRequest articleRequest);
+    public ValueTask<UpdateArticleResponse> UpdateArticleAsync(Guid articleId, UpdateArticleRequest articleRequest);
 }

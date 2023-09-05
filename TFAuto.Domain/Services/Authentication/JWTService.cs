@@ -37,7 +37,7 @@ public class JWTService
         var claims = new List<Claim>
         {
             new Claim(CustomClaimsType.USER_ID, userId),
-             new Claim(CustomClaimsType.USER_NAME, user.UserName),
+            new Claim(CustomClaimsType.USER_NAME, user.UserName),
             new Claim(CustomClaimsType.EMAIL, email),
             new Claim(CustomClaimsType.IS_ACCESS, isAccessToken.ToString()),
             new Claim(CustomClaimsType.ROLE_ID, user.RoleId)

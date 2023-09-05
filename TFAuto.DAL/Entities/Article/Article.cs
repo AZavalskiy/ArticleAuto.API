@@ -14,7 +14,7 @@ public class Article : BaseEntity
 
     public string LastUserWhoUpdated { get; set; }
 
-    public List<string> TagIds { get; set; } = new List<string>();
+    public List<string> TagIds { get; set; } = new();
 
     public string ImageFileName { get; set; }
 
