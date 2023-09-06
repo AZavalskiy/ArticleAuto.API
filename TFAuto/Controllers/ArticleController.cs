@@ -34,13 +34,14 @@ public class ArticleController : ControllerBase
         return Ok(createdArticle);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:Guid}")]
     [Authorize(Policy = PermissionId.MANAGE_ARTICLES)]
     [SwaggerOperation(
     Summary = "Update an article",
     Description = "Update an article by an user with a superadmin role")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UpdateArticleResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status404NotFound)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
     public async ValueTask<ActionResult<UpdateArticleResponse>> UpdateArticleAsync([FromRoute] Guid id, [FromForm] UpdateArticleRequest articleRequest)
     {

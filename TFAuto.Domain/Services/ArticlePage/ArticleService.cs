@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using TFAuto.DAL.Entities.Article;
-using TFAuto.Domain.Exceptions;
 using TFAuto.Domain.Services.ArticlePage.DTO.Request;
 using TFAuto.Domain.Services.ArticlePage.DTO.Response;
 using TFAuto.Domain.Services.Authentication.Constants;
@@ -73,7 +73,7 @@ public class ArticleService : IArticleService
         var existingArticleEntity = await _repositoryArticle.GetAsync(c => c.Id == articleId.ToString()).FirstOrDefaultAsync();
 
         if (existingArticleEntity == null)
-            throw new ArgumentException(ErrorMessages.ARTICLE_NOT_FOUND);
+            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
         foreach (var existingArticleEntityTagId in existingArticleEntity.TagIds)
         {
@@ -112,6 +112,9 @@ public class ArticleService : IArticleService
 
     private async ValueTask<List<Tag>> AllocateTags(string tagString, Article articleEntity)
     {
+        const int TAGS_MAX_QUANTITY = 5;
+        const string TAGS_PATTERN = @"#[A-Za-z0-9]+";
+
         List<Tag> tagsForArticleEntityList = new();
 
         if (tagString.IsNullOrEmpty())
@@ -119,10 +122,9 @@ public class ArticleService : IArticleService
             return tagsForArticleEntityList;
         }
 
-        string tagStringPattern = @"#[A-Za-z0-9]+";
-        MatchCollection selectedTagsFromString = Regex.Matches(tagString.ToLower(), tagStringPattern);
+        MatchCollection selectedTagsFromString = Regex.Matches(tagString.ToLower(), TAGS_PATTERN);
 
-        if (selectedTagsFromString.Count > Limitations.ARTICLE_MAX_QUANTITY_OF_TAGS)
+        if (selectedTagsFromString.Count > TAGS_MAX_QUANTITY)
             throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
 
         foreach (Match selectedTagFromString in selectedTagsFromString)
