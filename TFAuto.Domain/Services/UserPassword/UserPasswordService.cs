@@ -3,7 +3,6 @@ using Microsoft.Azure.CosmosRepository.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Cryptography;
 using TFAuto.Domain.Configurations;
 using TFAuto.Domain.Services.Email;
 using TFAuto.Domain.Services.UserPassword.DTO;
@@ -30,8 +29,11 @@ namespace TFAuto.Domain.Services.UserPassword
             _emailService = emailService;
         }
 
-        public async ValueTask<ForgotPasswordResponse> RequestPasswordResetAsync(ForgotPasswordRequest request)
+        public async ValueTask<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request, string baseUrl)
         {
+            if (string.IsNullOrEmpty(baseUrl))
+                throw new Exception("URL is missing in the request.");
+
             var user = await _userRepository.GetAsync(t => t.Email == request.Email).FirstOrDefaultAsync();
 
             if (user == null)
@@ -44,7 +46,7 @@ namespace TFAuto.Domain.Services.UserPassword
 
             _memoryCache.Set(resetToken, new TokenInfo { UserId = user.Id, Expiration = сodeExpiration }, сodeExpiration);
 
-            var resetLink = GeneratePasswordResetLink();
+            var resetLink = GenerateRecoveryPasswordLink(baseUrl);
             await _emailService.SendPasswordResetEmailAsync(request.Email, resetToken, resetLink);
 
             var response = new ForgotPasswordResponse { Message = "Email with further instructions has been successfully sent." };
@@ -68,32 +70,30 @@ namespace TFAuto.Domain.Services.UserPassword
             return response;
         }
 
-        private string GeneratePasswordResetLink()
+        private static string GenerateRecoveryPasswordLink(string baseUrl)
         {
-            var passResetSettings = GetPasswordResetSettings();
-
-            var resetLink = $"{passResetSettings.ResetLinkBaseUrl}";
-
+            var resetLink = $"{baseUrl}/recovery-password";
             return resetLink;
         }
 
-        private string GenerateResetToken(int tokenLength)
+        private static string GenerateResetToken(int tokenLength)
         {
-            var randomNumber = new byte[tokenLength];
-            string refreshToken = "";
+            if (tokenLength < 1)
+                throw new ArgumentOutOfRangeException(nameof(tokenLength));
 
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(randomNumber);
-                refreshToken = Convert.ToBase64String(randomNumber);
-            }
+            Random rng = new Random();
+            int minValue = (int)Math.Pow(10, tokenLength - 1);
+            int maxValue = (int)Math.Pow(10, tokenLength) - 1;
+            int tokenValue = rng.Next(minValue, maxValue + 1);
+
+            var refreshToken = tokenValue.ToString().PadLeft(tokenLength, '0');
 
             return refreshToken;
         }
 
-        private PasswordResetSettings GetPasswordResetSettings()
+        private TokenSettings GetPasswordResetSettings()
         {
-            return _configuration.GetSection("PasswordResetSettings").Get<PasswordResetSettings>();
+            return _configuration.GetSection("TokenSettings").Get<TokenSettings>();
         }
     }
 }

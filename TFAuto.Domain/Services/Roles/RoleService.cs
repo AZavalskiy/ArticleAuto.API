@@ -19,7 +19,7 @@ namespace TFAuto.Domain.Services.Roles
 
         public async ValueTask<IEnumerable<RoleListResponse>> GetRolesAsync()
         {
-            var roleList = await _roleRepository.GetAsync(t => t.Type == "Role");
+            var roleList = await _roleRepository.GetAsync(t => t.Type == nameof(Role));
 
             if (roleList == null)
                 throw new ValidationException(ErrorMessages.ROLES_NOT_FOUND);

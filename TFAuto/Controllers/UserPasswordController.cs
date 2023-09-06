@@ -25,7 +25,8 @@ namespace TFAuto.WebApp.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
         public async ValueTask<ActionResult<ForgotPasswordResponse>> ForgotPassword(ForgotPasswordRequest request)
         {
-            var response = await _userPasswordService.RequestPasswordResetAsync(request);
+            string callingUrl = Request.GetTypedHeaders().Referer?.AbsoluteUri;
+            var response = await _userPasswordService.ForgotPasswordAsync(request, callingUrl);
             return Ok(response);
         }
 
