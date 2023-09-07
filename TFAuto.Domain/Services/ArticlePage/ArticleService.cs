@@ -35,8 +35,8 @@ public class ArticleService : IArticleService
 
     public async ValueTask<CreateArticleResponse> CreateArticleAsync(CreateArticleRequest articleRequest)
     {
-        var articleAuthorId = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID).Value;
-        var articleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME).Value;
+        var articleAuthorId = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID)?.Value;
+        var articleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME)?.Value;
 
         if (articleAuthorId == null || articleAuthorName == null)
             throw new ValidationException(ErrorMessages.ARTICLE_USER_NOT_FOUND);
@@ -75,7 +75,7 @@ public class ArticleService : IArticleService
 
     public async ValueTask<UpdateArticleResponse> UpdateArticleAsync(Guid articleId, UpdateArticleRequest articleRequest)
     {
-        var lastArticleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME).Value;
+        var lastArticleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME)?.Value;
 
         if (lastArticleAuthorName == null)
             throw new ValidationException(ErrorMessages.ARTICLE_USER_WHO_UPDATED_NOT_FOUND);
