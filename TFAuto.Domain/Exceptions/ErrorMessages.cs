@@ -29,4 +29,6 @@ public class ErrorMessages
 
     public const string ARTICLE_MAX_TAGS_QUANTITY = "You can chose up to 5 tags";
     public const string ARTICLE_NOT_FOUND = "Article not found";
+    public const string ARTICLE_USER_NOT_FOUND = "There is no information about the author of the article";
+    public const string ARTICLE_USER_WHO_UPDATED_NOT_FOUND = "There is no information about the author who made adjustments to the article";
 }

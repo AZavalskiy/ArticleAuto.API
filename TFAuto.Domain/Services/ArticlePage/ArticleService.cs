@@ -38,9 +38,16 @@ public class ArticleService : IArticleService
         var articleAuthorId = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID).Value;
         var articleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME).Value;
 
+        if (articleAuthorId == null || articleAuthorName == null)
+            throw new ValidationException(ErrorMessages.ARTICLE_USER_NOT_FOUND);
+
         Article articleEntityFromRequest = _mapper.Map<Article>(articleRequest);
 
         var articleAuthorEntity = await _repositoryUser.GetAsync(c => c.Id == articleAuthorId).FirstOrDefaultAsync();
+
+        if (articleAuthorEntity == null)
+            throw new ValidationException(ErrorMessages.ARTICLE_USER_NOT_FOUND);
+
         articleAuthorEntity.ArticleIds.Add(articleEntityFromRequest.Id);
         await _repositoryUser.UpdateAsync(articleAuthorEntity);
 
@@ -68,6 +75,11 @@ public class ArticleService : IArticleService
 
     public async ValueTask<UpdateArticleResponse> UpdateArticleAsync(Guid articleId, UpdateArticleRequest articleRequest)
     {
+        var lastArticleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME).Value;
+
+        if (lastArticleAuthorName == null)
+            throw new ValidationException(ErrorMessages.ARTICLE_USER_WHO_UPDATED_NOT_FOUND);
+
         Article articleEntityFromRequest = _mapper.Map<Article>(articleRequest);
 
         var existingArticleEntity = await _repositoryArticle.GetAsync(c => c.Id == articleId.ToString()).FirstOrDefaultAsync();
@@ -86,7 +98,6 @@ public class ArticleService : IArticleService
 
         List<Tag> newArticleEntityTagsList = await AllocateTags(articleRequest.Tags, existingArticleEntity);
 
-        var lastArticleAuthorName = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_NAME).Value;
         var imageResponse = await _imageService.UpdateAsync(existingArticleEntity.ImageFileName, articleRequest.Image);
 
         existingArticleEntity.Name = articleEntityFromRequest.Name;
