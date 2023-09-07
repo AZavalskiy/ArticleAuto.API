@@ -8,10 +8,12 @@ namespace TFAuto.Domain.Services.Email
     public class EmailService : IEmailService
     {
         private readonly IConfiguration _configuration;
+        private readonly TokenSettings _passwordResetSettings;
 
         public EmailService(IConfiguration configuration)
         {
             _configuration = configuration;
+            _passwordResetSettings = configuration.GetSection("TokenSettings").Get<TokenSettings>();
         }
 
         public async ValueTask SendConfirmationEmailAsync(string userEmail, string confirmationLink)
