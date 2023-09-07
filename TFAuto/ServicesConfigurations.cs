@@ -5,7 +5,9 @@ using System.Text;
 using TFAuto.DAL.Constant;
 using TFAuto.Domain;
 using TFAuto.Domain.Configurations;
+using TFAuto.Domain.Mappers;
 using TFAuto.Domain.Seeds;
+using TFAuto.Domain.Services.ArticlePage;
 using TFAuto.Domain.Services.Authentication;
 using TFAuto.Domain.Services.Authentication.Constants;
 using TFAuto.Domain.Services.Blob;
@@ -29,6 +31,7 @@ public static class ServicesConfigurations
         AddSwagger(builder.Services);
         AddServices(builder.Services);
         AddMappers(builder.Services);
+        AddHtttpAccessor(builder);
     }
 
     private static void AddCosmosRepository(WebApplicationBuilder builder)
@@ -161,12 +164,14 @@ public static class ServicesConfigurations
         serviceCollection.AddScoped<JWTService>();
         serviceCollection.AddScoped<IAuthenticationService, AuthenticationService>();
         serviceCollection.AddScoped<IBlobService, BlobService>();
+        serviceCollection.AddScoped<IArticleService, ArticleService>();
     }
 
     private static void AddMappers(IServiceCollection serviceCollection)
     {
         serviceCollection.AddAutoMapper(typeof(UserMapper));
         serviceCollection.AddAutoMapper(typeof(RoleUserMapper));
+        serviceCollection.AddAutoMapper(typeof(ArticleMapper));
     }
 
     public static void InitializeSeeds(this WebApplication app)
@@ -179,6 +184,11 @@ public static class ServicesConfigurations
             var permissionInitializer = scope.ServiceProvider.GetRequiredService<PermissionInitializer>();
             permissionInitializer.InitializePermissions().Wait();
         }
+    }
+
+    private static void AddHtttpAccessor(WebApplicationBuilder builder)
+    {
+        builder.Services.AddHttpContextAccessor();
     }
 
     public static void RegisterMiddleware(this WebApplication app)

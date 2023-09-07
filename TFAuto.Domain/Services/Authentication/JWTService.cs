@@ -1,14 +1,14 @@
 ﻿using Microsoft.Azure.CosmosRepository;
-using Microsoft.Extensions.Options;
-using System.Security.Claims;
-using TFAuto.TFAuto.DAL.Entities;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Azure.CosmosRepository.Extensions;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using TFAuto.DAL.Entities;
 using TFAuto.Domain.Services.Authentication.Constants;
 using TFAuto.Domain.Services.Authentication.Models;
-using TFAuto.DAL.Entities;
+using TFAuto.TFAuto.DAL.Entities;
 
 namespace TFAuto.Domain.Services.Authentication;
 
@@ -36,7 +36,8 @@ public class JWTService
         var role = await _repositoryRole.GetAsync(c => c.Id == user.RoleId).FirstOrDefaultAsync();
         var claims = new List<Claim>
         {
-            new Claim(CustomClaimsType.SUBJECT, userId),
+            new Claim(CustomClaimsType.USER_ID, userId),
+            new Claim(CustomClaimsType.USER_NAME, user.UserName),
             new Claim(CustomClaimsType.EMAIL, email),
             new Claim(CustomClaimsType.IS_ACCESS, isAccessToken.ToString()),
             new Claim(CustomClaimsType.ROLE_ID, user.RoleId)

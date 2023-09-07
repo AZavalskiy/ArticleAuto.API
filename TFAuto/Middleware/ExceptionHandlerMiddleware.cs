@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SendGrid.Helpers.Errors.Model;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace TFAuto.WebApp.Middleware;
@@ -21,6 +22,10 @@ public class ExceptionHandlerMiddleware
         catch (ValidationException ex)
         {
             await ProcessException(context, ex.GetBaseException().Message, ex.Message, (int)HttpStatusCode.BadRequest);
+        }
+        catch (NotFoundException ex)
+        {
+            await ProcessException(context, ex.GetBaseException().Message, ex.Message, (int)HttpStatusCode.NotFound);
         }
         catch (Exception ex)
         {
