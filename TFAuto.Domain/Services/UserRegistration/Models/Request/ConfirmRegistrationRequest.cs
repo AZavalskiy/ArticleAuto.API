@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TFAuto.Domain;
 
-public class UserRegistrationRequestModel
+public class ConfirmRegistrationRequest
 {
     private string _userName;
     [Required]
