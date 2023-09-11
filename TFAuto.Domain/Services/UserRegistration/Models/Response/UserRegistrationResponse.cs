@@ -1,5 +1,6 @@
 ﻿namespace TFAuto.Domain;
-public class UserRegistrationResponseModel
+
+public class UserRegistrationResponse
 {
     public string Id { get; set; }
     public string UserName { get; set; }
