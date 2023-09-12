@@ -121,6 +121,50 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
+    public async ValueTask<GetArticleResponse> GetArticleAsync(Guid articleId)
+    {
+        var article = await _repositoryArticle.GetAsync(c => c.Id == articleId.ToString()).FirstOrDefaultAsync();
+
+        if (article == null)
+            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+        var articleResponse = await ConvertGetArticleResponse(article);
+
+        return articleResponse;
+    }
+
+    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(int page)
+    {
+        const double ARTICLES_QUANTITY = 3.0;
+        const string QUERY_ALL_ARTICLES = "SELECT * FROM c  WHERE c.type = \"Article\"";
+
+        var articleList = await _repositoryArticle.GetByQueryAsync(QUERY_ALL_ARTICLES).ToListAsync();
+
+        if (articleList == null)
+            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+        var pageCount = Math.Ceiling(articleList.Count() / ARTICLES_QUANTITY);
+
+        var articles = articleList
+            .Skip((page - 1) * (int)ARTICLES_QUANTITY)
+            .Take((int)ARTICLES_QUANTITY)
+            .ToList();
+
+        var allArtclesResponse = new GetAllArticlesResponse()
+        {
+            CurrentPage = page,
+            Pages = (int)pageCount
+        };
+
+        foreach (Article article in articles)
+        {
+            var areicleResponse = await ConvertGetArticleResponse(article);
+            allArtclesResponse.Articles.Add(areicleResponse);
+        }
+
+        return allArtclesResponse;
+    }
+
     private async ValueTask<List<Tag>> AllocateTags(string tagString, Article articleEntity)
     {
         const int TAGS_MAX_QUANTITY = 5;
@@ -167,5 +211,24 @@ public class ArticleService : IArticleService
         }
 
         return tagsForArticleEntityList;
+    }
+
+    private async ValueTask<GetArticleResponse> ConvertGetArticleResponse(Article article)
+    {
+        string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"Tag\" AND ARRAY_CONTAINS(c.articleIds, '{article.Id}')";
+
+        var tagsList = await _repositoryTag.GetByQueryAsync(queryTagsByArticleId).ToListAsync();
+        var imageResponse = await _imageService.GetAsync(article.ImageFileName);
+
+        GetArticleResponse articleResponse = _mapper.Map<GetArticleResponse>(article);
+        articleResponse.Image = imageResponse;
+
+        foreach (Tag tag in tagsList)
+        {
+            TagResponse tagResponse = _mapper.Map<TagResponse>(tag);
+            articleResponse.Tags.Add(tagResponse);
+        }
+
+        return articleResponse;
     }
 }
