@@ -11,8 +11,7 @@ namespace TFAuto.WebApp.Controllers
     [ApiController]
     [Produces("application/json")]
     [Route("comments")]
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
 
     public class CommentController : ControllerBase
     {
