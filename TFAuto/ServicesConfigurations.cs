@@ -11,7 +11,9 @@ using TFAuto.Domain.Services.ArticlePage;
 using TFAuto.Domain.Services.Authentication;
 using TFAuto.Domain.Services.Authentication.Constants;
 using TFAuto.Domain.Services.Blob;
+using TFAuto.Domain.Services.CommentService;
 using TFAuto.Domain.Services.Email;
+using TFAuto.Domain.Services.LikeService;
 using TFAuto.Domain.Services.Roles;
 using TFAuto.Domain.Services.UserPassword;
 using TFAuto.WebApp.Configurations;
@@ -165,6 +167,8 @@ public static class ServicesConfigurations
         serviceCollection.AddScoped<IAuthenticationService, AuthenticationService>();
         serviceCollection.AddScoped<IBlobService, BlobService>();
         serviceCollection.AddScoped<IArticleService, ArticleService>();
+        serviceCollection.AddScoped<ILikeService, LikeService>();
+        serviceCollection.AddScoped<ICommentService, CommentService>();
     }
 
     private static void AddMappers(IServiceCollection serviceCollection)
@@ -172,6 +176,7 @@ public static class ServicesConfigurations
         serviceCollection.AddAutoMapper(typeof(UserMapper));
         serviceCollection.AddAutoMapper(typeof(RoleUserMapper));
         serviceCollection.AddAutoMapper(typeof(ArticleMapper));
+        serviceCollection.AddAutoMapper(typeof(CommentMapper));
     }
 
     public static void InitializeSeeds(this WebApplication app)
