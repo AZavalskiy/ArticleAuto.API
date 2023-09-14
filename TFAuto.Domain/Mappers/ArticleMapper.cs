@@ -16,5 +16,7 @@ public class ArticleMapper : Profile
 
         CreateMap<UpdateArticleRequest, Article>();
         CreateMap<Article, UpdateArticleResponse>();
+
+        CreateMap<Article, GetArticleResponse>();
     }
 }

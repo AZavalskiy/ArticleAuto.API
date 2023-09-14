@@ -13,13 +13,9 @@ public class UpdateArticleRequest
     public string Name { get; set; }
 
     [Required]
-    [DefaultValue("New description of the article")]
-    public string Description { get; set; }
-
-    [Required]
     [DefaultValue("New text of the article")]
     public string Text { get; set; }
 
-    [DefaultValue("#tag4 #tag5 #tag6")]
-    public string Tags { get; set; }
+    [DefaultValue(new string[] { "#tag4", "#tag5", "#tag6" })]
+    public List<string> Tags { get; set; }
 }

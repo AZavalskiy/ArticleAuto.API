@@ -1,6 +1,11 @@
-﻿namespace TFAuto.Domain;
+﻿using TFAuto.Domain.Services.UserRegistration.Models.Request;
+using TFAuto.Domain.Services.UserRegistration.Models.Response;
+
+namespace TFAuto.Domain;
 
 public interface IRegistrationService
 {
-    public ValueTask<UserRegistrationResponseModel> RegisrateUser(UserRegistrationRequestModel userRequest);
+    ValueTask<ConfirmRegistrationResponse> ConfirmEmailAsync(ConfirmRegistrationRequest userRequest, string baseUrl);
+
+    ValueTask<RegistrationResponse> RegisterUserAsync(RegistrationRequest confirmEmailRequest);
 }
