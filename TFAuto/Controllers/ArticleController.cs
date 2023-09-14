@@ -24,7 +24,7 @@ public class ArticleController : ControllerBase
     [Authorize(Policy = PermissionId.EDIT_ARTICLES)]
     [SwaggerOperation(
      Summary = "Create an article",
-     Description = "Creates an article by an user with an author or superadmin role")]
+     Description = "Creates an article by an author")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(CreateArticleResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -38,7 +38,7 @@ public class ArticleController : ControllerBase
     [Authorize(Policy = PermissionId.MANAGE_ARTICLES)]
     [SwaggerOperation(
      Summary = "Update an article",
-     Description = "Update an article by an user with a superadmin role")]
+     Description = "Updates an article created by author")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UpdateArticleResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
@@ -52,8 +52,8 @@ public class ArticleController : ControllerBase
     [HttpGet("{id:Guid}")]
     [Authorize]
     [SwaggerOperation(
-     Summary = "Retrive an article by id",
-     Description = "Retrives an article with tags and image")]
+     Summary = "Retrieve an article by id",
+     Description = "Retrieves an article with tags and an image")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetArticleResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
@@ -67,15 +67,15 @@ public class ArticleController : ControllerBase
     [HttpGet]
     [Authorize]
     [SwaggerOperation(
-     Summary = "Retrive all articles with pagination",
-     Description = "Retrives all articles by pages, 3 articles per page")]
+     Summary = "Retrieve articles with pagination",
+     Description = "Retrieves articles by skip and take parameters and sorting")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetAllArticlesResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-    public async ValueTask<ActionResult<GetAllArticlesResponse>> GetAllArticlesAsync([Required][FromQuery] int page)
+    public async ValueTask<ActionResult<GetAllArticlesResponse>> GetAllArticlesAsync([Required][FromQuery] int skip, [Required] int take, [Required] SortOrder sortBy)
     {
-        var retrievedArticles = await _articleService.GetAllArticlesAsync(page);
+        var retrievedArticles = await _articleService.GetAllArticlesAsync(skip, take, sortBy);
         return Ok(retrievedArticles);
     }
 }

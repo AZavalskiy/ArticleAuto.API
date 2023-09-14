@@ -133,36 +133,63 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
-    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(int page)
+    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(int skip, int take, SortOrder sortBy)
     {
-        const double ARTICLES_QUANTITY = 3.0;
-        const string QUERY_ALL_ARTICLES = "SELECT * FROM c  WHERE c.type = \"Article\"";
+        string QUERY_ARTICLES = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\"";
 
-        var articleList = await _repositoryArticle.GetByQueryAsync(QUERY_ALL_ARTICLES).ToListAsync();
+        string QUERY_SORTING_ARTICLES(string sortByParameter, string orderByParameter = "")
+        {
+            QUERY_ARTICLES = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\" ORDER BY c.{sortByParameter} {orderByParameter}";
+            return QUERY_ARTICLES;
+        }
+
+        if (skip < 0 || take < 1)
+            throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
+
+        if (!sortBy.ToString().IsNullOrEmpty())
+        {
+            switch (sortBy.ToString())
+            {
+                case nameof(SortOrder.ByTheme):
+                    QUERY_ARTICLES = QUERY_SORTING_ARTICLES(nameof(Article.Name).ToLower());
+                    break;
+
+                case nameof(SortOrder.Ascending):
+                    QUERY_ARTICLES = QUERY_SORTING_ARTICLES(nameof(Article.LastUpdatedTimeUtc));
+                    break;
+
+                case nameof(SortOrder.Descending):
+                    QUERY_ARTICLES = QUERY_SORTING_ARTICLES(nameof(Article.LastUpdatedTimeUtc), "DESC");
+                    break;
+            }
+        }
+
+        var articleList = await _repositoryArticle.GetByQueryAsync(QUERY_ARTICLES);
 
         if (articleList == null)
             throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
-        var pageCount = Math.Ceiling(articleList.Count() / ARTICLES_QUANTITY);
+        var totalItems = articleList.Count();
 
-        var articles = articleList
-            .Skip((page - 1) * (int)ARTICLES_QUANTITY)
-            .Take((int)ARTICLES_QUANTITY)
-            .ToList();
+        if (totalItems <= skip)
+            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
-        var allArtclesResponse = new GetAllArticlesResponse()
+        if ((totalItems - skip) < take)
+            take = (totalItems - skip);
+
+        var allArticlesResponse = new GetAllArticlesResponse()
         {
-            CurrentPage = page,
-            Pages = (int)pageCount
+            TotalItems = totalItems,
+            Skip = skip,
+            Take = take,
+            Articles = articleList
+            .Skip(skip)
+            .Take(take)
+            .Select(async article => await ConvertGetArticleResponse(article))
+            .Select(task => task.Result).ToList()
         };
 
-        foreach (Article article in articles)
-        {
-            var areicleResponse = await ConvertGetArticleResponse(article);
-            allArtclesResponse.Articles.Add(areicleResponse);
-        }
-
-        return allArtclesResponse;
+        return allArticlesResponse;
     }
 
     private async ValueTask<List<Tag>> AllocateTags(string tagString, Article articleEntity)
@@ -215,19 +242,13 @@ public class ArticleService : IArticleService
 
     private async ValueTask<GetArticleResponse> ConvertGetArticleResponse(Article article)
     {
-        string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"Tag\" AND ARRAY_CONTAINS(c.articleIds, '{article.Id}')";
-
-        var tagsList = await _repositoryTag.GetByQueryAsync(queryTagsByArticleId).ToListAsync();
+        string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" AND ARRAY_CONTAINS(c.articleIds, '{article.Id}')";
+        var tagsList = await _repositoryTag.GetByQueryAsync(queryTagsByArticleId);
         var imageResponse = await _imageService.GetAsync(article.ImageFileName);
 
         GetArticleResponse articleResponse = _mapper.Map<GetArticleResponse>(article);
         articleResponse.Image = imageResponse;
-
-        foreach (Tag tag in tagsList)
-        {
-            TagResponse tagResponse = _mapper.Map<TagResponse>(tag);
-            articleResponse.Tags.Add(tagResponse);
-        }
+        articleResponse.Tags = tagsList.Select(tag => _mapper.Map<TagResponse>(tag)).ToList();
 
         return articleResponse;
     }
