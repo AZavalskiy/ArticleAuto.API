@@ -66,7 +66,7 @@ public class RegistrationService : IRegistrationService
         return new ConfirmRegistrationResponse { Message = "Email with further instructions has been successfully sent." };
     }
 
-    public async ValueTask<RegistrationResponse> RegisrateUserAsync(RegistrationRequest confirmEmailRequest)
+    public async ValueTask<RegistrationResponse> RegisterUserAsync(RegistrationRequest confirmEmailRequest)
     {
         var tokenInfo = _memoryCache.Get<TokenInfo>(confirmEmailRequest.Token);
 
@@ -85,12 +85,12 @@ public class RegistrationService : IRegistrationService
 
         UserRegistrationResponse responseUser = _mapper.Map<UserRegistrationResponse>(dataUser);
 
-        var jwtTtoken = await _jwtService.GenerateTokenMode(user.Id, user.Email);
+        var jwtToken = await _jwtService.GenerateTokenMode(user.Id, user.Email);
 
         var response = new RegistrationResponse
         {
             User = responseUser,
-            Tokens = jwtTtoken
+            Tokens = jwtToken
         };
 
         return response;

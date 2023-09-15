@@ -10,11 +10,11 @@ namespace TFAuto.WebApp;
 [Route("registration")]
 public class RegistrationController : ControllerBase
 {
-    private readonly IRegistrationService _registrationServics;
+    private readonly IRegistrationService _registrationService;
 
     public RegistrationController(IRegistrationService registrationServics)
     {
-        _registrationServics = registrationServics;
+        _registrationService = registrationServics;
     }
 
     [HttpPost("confirm-email")]
@@ -27,7 +27,7 @@ public class RegistrationController : ControllerBase
     public async ValueTask<ActionResult<ConfirmRegistrationResponse>> ConfirmEmailAsync([FromBody] ConfirmRegistrationRequest userRequest)
     {
         string callingUrl = Request.GetTypedHeaders().Referer?.AbsoluteUri;
-        var userResponse = await _registrationServics.ConfirmEmailAsync(userRequest, callingUrl);
+        var userResponse = await _registrationService.ConfirmEmailAsync(userRequest, callingUrl);
         return Ok(userResponse);
     }
 
@@ -38,9 +38,9 @@ public class RegistrationController : ControllerBase
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(RegistrationResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-    public async ValueTask<ActionResult<RegistrationResponse>> RegisrateUserAsync([FromQuery] RegistrationRequest confirmEmailRequest)
+    public async ValueTask<ActionResult<RegistrationResponse>> RegisterUserAsync([FromQuery] RegistrationRequest confirmEmailRequest)
     {
-        var userResponse = await _registrationServics.RegisrateUserAsync(confirmEmailRequest);
+        var userResponse = await _registrationService.RegisterUserAsync(confirmEmailRequest);
         return Ok(userResponse);
     }
 }

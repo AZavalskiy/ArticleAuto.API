@@ -7,5 +7,5 @@ public interface IRegistrationService
 {
     ValueTask<ConfirmRegistrationResponse> ConfirmEmailAsync(ConfirmRegistrationRequest userRequest, string baseUrl);
 
-    ValueTask<RegistrationResponse> RegisrateUserAsync(RegistrationRequest confirmEmailRequest);
+    ValueTask<RegistrationResponse> RegisterUserAsync(RegistrationRequest confirmEmailRequest);
 }
