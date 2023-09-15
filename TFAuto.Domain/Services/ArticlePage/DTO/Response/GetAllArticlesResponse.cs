@@ -1,15 +1,8 @@
 ﻿namespace TFAuto.Domain.Services.ArticlePage.DTO.Response;
 
-public class GetAllArticlesResponse : PagingBase
+public class GetAllArticlesResponse : BasePagination
 {
     public List<GetArticleResponse> Articles { get; set; } = new();
-}
 
-public enum SortOrder
-{
-    Ascending,
-
-    Descending,
-
-    ByTheme,
+    public SortOrder OrderBy { get; set; }
 }

@@ -133,7 +133,7 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
-    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(int skip, int take, SortOrder sortBy)
+    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(BasePaginationRequest paginationRquest)
     {
         string QUERY_ARTICLES = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\"";
 
@@ -143,12 +143,12 @@ public class ArticleService : IArticleService
             return QUERY_ARTICLES;
         }
 
-        if (skip < 0 || take < 1)
+        if (paginationRquest.Skip < 0 || paginationRquest.Take < 1)
             throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
 
-        if (!sortBy.ToString().IsNullOrEmpty())
+        if (!paginationRquest.SortBy.ToString().IsNullOrEmpty())
         {
-            switch (sortBy.ToString())
+            switch (paginationRquest.SortBy.ToString())
             {
                 case nameof(SortOrder.ByTheme):
                     QUERY_ARTICLES = QUERY_SORTING_ARTICLES(nameof(Article.Name).ToLower());
@@ -171,20 +171,21 @@ public class ArticleService : IArticleService
 
         var totalItems = articleList.Count();
 
-        if (totalItems <= skip)
+        if (totalItems <= paginationRquest.Skip)
             throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
-        if ((totalItems - skip) < take)
-            take = (totalItems - skip);
+        if ((totalItems - paginationRquest.Skip) < paginationRquest.Take)
+            paginationRquest.Take = (totalItems - paginationRquest.Skip);
 
         var allArticlesResponse = new GetAllArticlesResponse()
         {
             TotalItems = totalItems,
-            Skip = skip,
-            Take = take,
+            Skip = paginationRquest.Skip,
+            Take = paginationRquest.Take,
+            OrderBy = paginationRquest.SortBy,
             Articles = articleList
-            .Skip(skip)
-            .Take(take)
+            .Skip(paginationRquest.Skip)
+            .Take(paginationRquest.Take)
             .Select(async article => await ConvertGetArticleResponse(article))
             .Select(task => task.Result).ToList()
         };

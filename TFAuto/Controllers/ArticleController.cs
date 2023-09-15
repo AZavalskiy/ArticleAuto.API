@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.ComponentModel.DataAnnotations;
 using TFAuto.DAL.Constant;
+using TFAuto.Domain.Services;
 using TFAuto.Domain.Services.ArticlePage;
 using TFAuto.Domain.Services.ArticlePage.DTO.Request;
 using TFAuto.Domain.Services.ArticlePage.DTO.Response;
@@ -73,9 +73,9 @@ public class ArticleController : ControllerBase
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-    public async ValueTask<ActionResult<GetAllArticlesResponse>> GetAllArticlesAsync([Required][FromQuery] int skip, [Required] int take, [Required] SortOrder sortBy)
+    public async ValueTask<ActionResult<GetAllArticlesResponse>> GetAllArticlesAsync([FromQuery] BasePaginationRequest paginationRquest)
     {
-        var retrievedArticles = await _articleService.GetAllArticlesAsync(skip, take, sortBy);
+        var retrievedArticles = await _articleService.GetAllArticlesAsync(paginationRquest);
         return Ok(retrievedArticles);
     }
 }

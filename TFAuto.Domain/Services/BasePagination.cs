@@ -1,6 +1,6 @@
 ﻿namespace TFAuto.Domain.Services;
 
-public class PagingBase
+public class BasePagination
 {
     public int TotalItems { get; set; }
 
