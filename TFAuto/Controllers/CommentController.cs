@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
+using TFAuto.DAL.Constant;
 using TFAuto.Domain.Services.CommentService;
 using TFAuto.Domain.Services.CommentService.DTO;
 using TFAuto.Domain.Services.LikeService;
@@ -45,6 +46,7 @@ namespace TFAuto.WebApp.Controllers
         }
 
         [HttpDelete("{id:Guid}")]
+        [Authorize(Policy = PermissionId.DELETE_COMMENT)]
         [SwaggerResponse(StatusCodes.Status204NoContent)]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
