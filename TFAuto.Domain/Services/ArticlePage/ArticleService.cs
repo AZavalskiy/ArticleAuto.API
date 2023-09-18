@@ -134,7 +134,7 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
-    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(BasePaginationRequest paginationRequest)
+    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetArticlesPaginationRequest paginationRequest)
     {
         const int PAGINATION_SKIP_MIN_LIMIT = 0;
         const int PAGINATION_TAKE_MIN_LIMIT = 1;
@@ -230,7 +230,7 @@ public class ArticleService : IArticleService
         return tagsForArticleEntityList;
     }
 
-    private string BuildQuery(BasePaginationRequest paginationRequest)
+    private string BuildQuery(GetArticlesPaginationRequest paginationRequest)
     {
         const string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\"";
         StringBuilder queryBuilder = new(baseQuery);

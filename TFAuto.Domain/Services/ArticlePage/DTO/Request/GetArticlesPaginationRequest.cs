@@ -2,7 +2,7 @@
 
 namespace TFAuto.Domain.Services;
 
-public class BasePaginationRequest
+public class GetArticlesPaginationRequest
 {
     [DefaultValue(0)]
     public int Skip { get; set; }
@@ -10,6 +10,5 @@ public class BasePaginationRequest
     [DefaultValue(25)]
     public int Take { get; set; }
 
-    [DefaultValue(nameof(SortOrder.Ascending))]
-    public SortOrder SortBy { get; set; }
+    public SortOrder SortBy { get; set; } = SortOrder.Descending;
 }
