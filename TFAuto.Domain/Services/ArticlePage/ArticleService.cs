@@ -5,8 +5,10 @@ using Microsoft.Azure.CosmosRepository.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Text.RegularExpressions;
 using TFAuto.DAL.Entities.Article;
+using TFAuto.Domain.ExtensionMethods;
 using TFAuto.Domain.Services.ArticlePage.DTO.Request;
 using TFAuto.Domain.Services.ArticlePage.DTO.Response;
 using TFAuto.Domain.Services.Authentication.Constants;
@@ -101,7 +103,6 @@ public class ArticleService : IArticleService
         var imageResponse = await _imageService.UpdateAsync(existingArticleEntity.ImageFileName, articleRequest.Image);
 
         existingArticleEntity.Name = articleEntityFromRequest.Name;
-        existingArticleEntity.Description = articleEntityFromRequest.Description;
         existingArticleEntity.Text = articleEntityFromRequest.Text;
         existingArticleEntity.LastUserWhoUpdated = lastArticleAuthorName;
         existingArticleEntity.ImageFileName = imageResponse.FileName;
@@ -133,94 +134,82 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
-    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(BasePaginationRequest paginationRquest)
+    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(BasePaginationRequest paginationRequest)
     {
-        string QUERY_ARTICLES = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\"";
+        const int PAGINATION_SKIP_MIN_LIMIT = 0;
+        const int PAGINATION_TAKE_MIN_LIMIT = 1;
 
-        string QUERY_SORTING_ARTICLES(string sortByParameter, string orderByParameter = "")
-        {
-            QUERY_ARTICLES = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\" ORDER BY c.{sortByParameter} {orderByParameter}";
-            return QUERY_ARTICLES;
-        }
-
-        if (paginationRquest.Skip < 0 || paginationRquest.Take < 1)
+        if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
             throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
 
-        if (!paginationRquest.SortBy.ToString().IsNullOrEmpty())
-        {
-            switch (paginationRquest.SortBy.ToString())
-            {
-                case nameof(SortOrder.ByTheme):
-                    QUERY_ARTICLES = QUERY_SORTING_ARTICLES(nameof(Article.Name).ToLower());
-                    break;
-
-                case nameof(SortOrder.Ascending):
-                    QUERY_ARTICLES = QUERY_SORTING_ARTICLES(nameof(Article.LastUpdatedTimeUtc));
-                    break;
-
-                case nameof(SortOrder.Descending):
-                    QUERY_ARTICLES = QUERY_SORTING_ARTICLES(nameof(Article.LastUpdatedTimeUtc), "DESC");
-                    break;
-            }
-        }
-
-        var articleList = await _repositoryArticle.GetByQueryAsync(QUERY_ARTICLES);
+        string queryArticles = BuildQuery(paginationRequest);
+        var articleList = await _repositoryArticle.GetByQueryAsync(queryArticles);
 
         if (articleList == null)
             throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
         var totalItems = articleList.Count();
 
-        if (totalItems <= paginationRquest.Skip)
+        if (totalItems <= paginationRequest.Skip)
             throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
-        if ((totalItems - paginationRquest.Skip) < paginationRquest.Take)
-            paginationRquest.Take = (totalItems - paginationRquest.Skip);
+        if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
+            paginationRequest.Take = (totalItems - paginationRequest.Skip);
+
+        var articlesResponse = articleList
+            .Skip(paginationRequest.Skip)
+            .Take(paginationRequest.Take)
+            .Select(async article => await ConvertGetArticleResponse(article))
+            .WhenAll().ToList();
 
         var allArticlesResponse = new GetAllArticlesResponse()
         {
             TotalItems = totalItems,
-            Skip = paginationRquest.Skip,
-            Take = paginationRquest.Take,
-            OrderBy = paginationRquest.SortBy,
-            Articles = articleList
-            .Skip(paginationRquest.Skip)
-            .Take(paginationRquest.Take)
-            .Select(async article => await ConvertGetArticleResponse(article))
-            .Select(task => task.Result).ToList()
+            Skip = paginationRequest.Skip,
+            Take = paginationRequest.Take,
+            OrderBy = paginationRequest.SortBy,
+            Articles = articlesResponse
         };
 
         return allArticlesResponse;
     }
 
-    private async ValueTask<List<Tag>> AllocateTags(string tagString, Article articleEntity)
+    private async ValueTask<List<Tag>> AllocateTags(List<string> tagsList, Article articleEntity)
     {
         const int TAGS_MAX_QUANTITY = 5;
         const string TAGS_PATTERN = @"#[A-Za-z0-9]+";
 
         List<Tag> tagsForArticleEntityList = new();
 
-        if (tagString.IsNullOrEmpty())
+        if (tagsList.IsNullOrEmpty())
         {
             return tagsForArticleEntityList;
         }
 
-        MatchCollection selectedTagsFromString = Regex.Matches(tagString.ToLower(), TAGS_PATTERN);
+        List<string> matchingTags = new();
 
-        if (selectedTagsFromString.Count > TAGS_MAX_QUANTITY)
+        foreach (var tag in tagsList)
+        {
+            MatchCollection matchedTagsFromList = Regex.Matches(tag, TAGS_PATTERN);
+
+            foreach (Match match in matchedTagsFromList)
+            {
+                matchingTags.Add(match.Value);
+            }
+        }
+
+        if (tagsList.Count > TAGS_MAX_QUANTITY)
             throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
 
-        foreach (Match selectedTagFromString in selectedTagsFromString)
+        foreach (var tag in matchingTags)
         {
-            string selectedTagNameFromString = selectedTagFromString.Value;
-
-            var existingEntityTag = await _repositoryTag.GetAsync(c => c.Name == selectedTagNameFromString).FirstOrDefaultAsync();
+            var existingEntityTag = await _repositoryTag.GetAsync(c => c.Name == tag).FirstOrDefaultAsync();
 
             if (existingEntityTag == null)
             {
                 var newTag = new Tag
                 {
-                    Name = selectedTagNameFromString,
+                    Name = tag,
                     ArticleIds = new List<string> { articleEntity.Id }
                 };
                 await _repositoryTag.CreateAsync(newTag);
@@ -241,9 +230,38 @@ public class ArticleService : IArticleService
         return tagsForArticleEntityList;
     }
 
+    private string BuildQuery(BasePaginationRequest paginationRequest)
+    {
+        const string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\"";
+        StringBuilder queryBuilder = new(baseQuery);
+
+        if (!paginationRequest.SortBy.ToString().IsNullOrEmpty())
+        {
+            queryBuilder.Append(" ORDER BY c.");
+
+            switch (paginationRequest.SortBy.ToString())
+            {
+                case nameof(SortOrder.ByTheme):
+                    queryBuilder.Append(nameof(Article.Name).FirstLetterToLower());
+                    break;
+
+                case nameof(SortOrder.Ascending):
+                    queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+                    break;
+
+                case nameof(SortOrder.Descending):
+                    queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+                    queryBuilder.Append(" DESC");
+                    break;
+            }
+        }
+
+        return queryBuilder.ToString();
+    }
+
     private async ValueTask<GetArticleResponse> ConvertGetArticleResponse(Article article)
     {
-        string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" AND ARRAY_CONTAINS(c.articleIds, '{article.Id}')";
+        string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" AND ARRAY_CONTAINS(c.{nameof(Tag.ArticleIds).FirstLetterToLower()}, '{article.Id}')";
         var tagsList = await _repositoryTag.GetByQueryAsync(queryTagsByArticleId);
         var imageResponse = await _imageService.GetAsync(article.ImageFileName);
 

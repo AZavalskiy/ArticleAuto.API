@@ -24,7 +24,7 @@ public class ArticleController : ControllerBase
     [Authorize(Policy = PermissionId.EDIT_ARTICLES)]
     [SwaggerOperation(
      Summary = "Create an article",
-     Description = "Creates an article by an author")]
+     Description = "Creates an article")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(CreateArticleResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -38,7 +38,7 @@ public class ArticleController : ControllerBase
     [Authorize(Policy = PermissionId.MANAGE_ARTICLES)]
     [SwaggerOperation(
      Summary = "Update an article",
-     Description = "Updates an article created by author")]
+     Description = "Updates an article by id")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UpdateArticleResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
