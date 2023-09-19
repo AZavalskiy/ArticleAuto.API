@@ -38,7 +38,7 @@ public class ErrorMessages
     public const string USER_IS_NOT_COMMENT_AUTHOR = "User is not author of comment";
     public const string USER_IS_NOT_ARTICLE_AUTHOR = "User is not author of artical";
     public const string LIKE_AUTHOR_NOT_FOUND = "Author of like not found";
+    public const string COMMENT_PAGE_NOT_EXISTS = "Comments doesn't exist";
 
     public const string USER_NOT_FOUND = "User not found";
-
 }

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using TFAuto.DAL.Constant;
 using TFAuto.Domain.Services.CommentService;
 using TFAuto.Domain.Services.CommentService.DTO;
+using TFAuto.Domain.Services.CommentService.Pagination;
 using TFAuto.Domain.Services.LikeService;
 
 namespace TFAuto.WebApp.Controllers
@@ -57,16 +58,16 @@ namespace TFAuto.WebApp.Controllers
         }
 
         [HttpGet]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(PagedCommentResponse))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetCommentResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<PagedCommentResponse>> GetArticleCommentsByPageAsync([Required] Guid articalId, [FromQuery] GetCommentRequest getComment)
+        public async ValueTask<ActionResult<GetCommentResponse>> GetAllCommentsAsync([FromQuery] BasePaginationCommentsRequest paginationRequest)
         {
-            var comments = await _commentService.GetArticleCommentsByPageAsync(articalId, getComment);
+            var comments = await _commentService.GetAllCommentsAsync(paginationRequest);
             return Ok(comments);
         }
 
-        [HttpPost("like/{commentId}")]
+        [HttpPost("like/{commentId:Guid}")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(bool))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -76,7 +77,7 @@ namespace TFAuto.WebApp.Controllers
             return Ok(like);
         }
 
-        [HttpDelete("like/{commentId}")]
+        [HttpDelete("like/{commentId:Guid}")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(bool))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]

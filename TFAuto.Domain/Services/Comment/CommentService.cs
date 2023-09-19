@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
+using Microsoft.IdentityModel.Tokens;
 using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
 using TFAuto.DAL.Constant;
 using TFAuto.DAL.Entities;
 using TFAuto.DAL.Entities.Article;
 using TFAuto.Domain.Services.CommentService.DTO;
+using TFAuto.Domain.Services.CommentService.Pagination;
 using TFAuto.Domain.Services.LikeService;
 
 namespace TFAuto.Domain.Services.CommentService
@@ -114,53 +116,59 @@ namespace TFAuto.Domain.Services.CommentService
             }
         }
 
-        public async ValueTask<PagedCommentResponse> GetArticleCommentsByPageAsync(Guid articleId, GetCommentRequest getComment)
+        public async ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(BasePaginationCommentsRequest paginationRequest)
         {
-            var article = await _repositoryArticle.GetAsync(t => t.Id == articleId.ToString()).FirstOrDefaultAsync();
+            string queryComments = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\"";
 
-            if (article == null)
-                throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
-
-            var commentList = await _repositoryComment.GetAsync(c => c.ArticleId == articleId.ToString());
-
-            if (commentList is null)
-                throw new NotFoundException(ErrorMessages.COMMENTS_NOT_FOUND);
-
-            var pageResults = getComment.PageSize;
-            string continuationToken = null;
-
-            if (getComment.CurrentPage > 1)
+            string queryCommentsSorting(string sortByParameter, string orderByParameter = "")
             {
-                var skip = (getComment.CurrentPage - 1) * pageResults;
-                var previousPage = await _repositoryComment.PageAsync(
-                    c => c.ArticleId == articleId.ToString(),
-                    pageResults,
-                    continuationToken: null);
+                queryComments = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" ORDER BY c.{sortByParameter} {orderByParameter}";
+                return queryComments;
+            }
 
-                if (previousPage != null && skip < previousPage.Total)
+            if (paginationRequest.Skip < 0 || paginationRequest.Take < 1)
+                throw new Exception(ErrorMessages.COMMENT_PAGE_NOT_EXISTS);
+
+            if (!paginationRequest.SortBy.ToString().IsNullOrEmpty())
+            {
+                switch (paginationRequest.SortBy.ToString())
                 {
-                    continuationToken = previousPage.Continuation;
+                    case nameof(SortCommentOrder.ByDate):
+                        queryComments = queryCommentsSorting(nameof(Comment.CreatedTimeUtc));
+                        break;
+
+                    case nameof(SortCommentOrder.ByLikes):
+                        queryComments = queryCommentsSorting(nameof(Comment.LikesCount), "DESC");
+                        break;
                 }
             }
 
-            var pageResult = await _repositoryComment.PageAsync(
-                c => c.ArticleId == articleId.ToString(),
-                pageResults, continuationToken: continuationToken);
+            var commentList = await _repositoryComment.GetByQueryAsync(queryComments);
 
-            var commentResponses = _mapper.Map<IEnumerable<GetCommentResponse>>(pageResult.Items);
+            if (commentList == null)
+                throw new NotFoundException(ErrorMessages.COMMENT_NOT_FOUND);
 
-            int totalPages = (int)Math.Ceiling((double)commentList.Count() / pageResults);
+            var totalItems = commentList.Count();
 
-            var pagedComments = new PagedCommentResponse
+            if (totalItems <= paginationRequest.Skip)
+                throw new NotFoundException(ErrorMessages.COMMENT_NOT_FOUND);
+
+            if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
+                paginationRequest.Take = (totalItems - paginationRequest.Skip);
+
+            var allCommentsResponse = new GetAllCommentsResponse()
             {
-                Comments = commentResponses,
-                CurrentPage = getComment.CurrentPage,
-                Pages = totalPages,
-                PageSize = getComment.PageSize,
-                CommentsCount = commentList.Count(),
+                TotalItems = totalItems,
+                Skip = paginationRequest.Skip,
+                Take = paginationRequest.Take,
+                OrderBy = paginationRequest.SortBy,
+                Comments = commentList
+                    .Skip(paginationRequest.Skip)
+                    .Take(paginationRequest.Take)
+                    .ToList()
             };
 
-            return pagedComments;
+            return allCommentsResponse;
         }
     }
 }
