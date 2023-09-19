@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations;
 using TFAuto.DAL.Constant;
 using TFAuto.Domain.Services.CommentService;
 using TFAuto.Domain.Services.CommentService.DTO;
-using TFAuto.Domain.Services.CommentService.Pagination;
 using TFAuto.Domain.Services.LikeService;
 
 namespace TFAuto.WebApp.Controllers
@@ -61,9 +60,9 @@ namespace TFAuto.WebApp.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetCommentResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<GetCommentResponse>> GetAllCommentsAsync([FromQuery] BasePaginationCommentsRequest paginationRequest)
+        public async ValueTask<ActionResult<GetCommentResponse>> GetAllCommentsAsync([Required] Guid articleId, [FromQuery] GetCommentPaginationRequest paginationRequest)
         {
-            var comments = await _commentService.GetAllCommentsAsync(paginationRequest);
+            var comments = await _commentService.GetAllCommentsAsync(articleId, paginationRequest);
             return Ok(comments);
         }
 

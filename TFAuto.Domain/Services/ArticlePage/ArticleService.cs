@@ -5,8 +5,10 @@ using Microsoft.Azure.CosmosRepository.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Text.RegularExpressions;
 using TFAuto.DAL.Entities.Article;
+using TFAuto.Domain.ExtensionMethods;
 using TFAuto.Domain.Services.ArticlePage.DTO.Request;
 using TFAuto.Domain.Services.ArticlePage.DTO.Response;
 using TFAuto.Domain.Services.Authentication.Constants;
@@ -101,7 +103,6 @@ public class ArticleService : IArticleService
         var imageResponse = await _imageService.UpdateAsync(existingArticleEntity.ImageFileName, articleRequest.Image);
 
         existingArticleEntity.Name = articleEntityFromRequest.Name;
-        existingArticleEntity.Description = articleEntityFromRequest.Description;
         existingArticleEntity.Text = articleEntityFromRequest.Text;
         existingArticleEntity.LastUserWhoUpdated = lastArticleAuthorName;
         existingArticleEntity.ImageFileName = imageResponse.FileName;
@@ -121,34 +122,94 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
-    private async ValueTask<List<Tag>> AllocateTags(string tagString, Article articleEntity)
+    public async ValueTask<GetArticleResponse> GetArticleAsync(Guid articleId)
+    {
+        var article = await _repositoryArticle.GetAsync(c => c.Id == articleId.ToString()).FirstOrDefaultAsync();
+
+        if (article == null)
+            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+        var articleResponse = await ConvertGetArticleResponse(article);
+
+        return articleResponse;
+    }
+
+    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetArticlesPaginationRequest paginationRequest)
+    {
+        const int PAGINATION_SKIP_MIN_LIMIT = 0;
+        const int PAGINATION_TAKE_MIN_LIMIT = 1;
+
+        if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
+            throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
+
+        string queryArticles = await BuildQuery(paginationRequest);
+        var articleList = await _repositoryArticle.GetByQueryAsync(queryArticles);
+
+        if (articleList == null)
+            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+        var totalItems = articleList.Count();
+
+        if (totalItems <= paginationRequest.Skip)
+            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+        if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
+            paginationRequest.Take = (totalItems - paginationRequest.Skip);
+
+        var articlesResponse = articleList
+            .Skip(paginationRequest.Skip)
+            .Take(paginationRequest.Take)
+            .Select(async article => await ConvertGetArticleResponse(article))
+            .WhenAll().ToList();
+
+        var allArticlesResponse = new GetAllArticlesResponse()
+        {
+            TotalItems = totalItems,
+            Skip = paginationRequest.Skip,
+            Take = paginationRequest.Take,
+            OrderBy = paginationRequest.SortBy,
+            Articles = articlesResponse
+        };
+
+        return allArticlesResponse;
+    }
+
+    private async ValueTask<List<Tag>> AllocateTags(List<string> tagsList, Article articleEntity)
     {
         const int TAGS_MAX_QUANTITY = 5;
         const string TAGS_PATTERN = @"#[A-Za-z0-9]+";
 
+        if (tagsList.Count > TAGS_MAX_QUANTITY)
+            throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
+
         List<Tag> tagsForArticleEntityList = new();
 
-        if (tagString.IsNullOrEmpty())
+        if (tagsList.IsNullOrEmpty())
         {
             return tagsForArticleEntityList;
         }
 
-        MatchCollection selectedTagsFromString = Regex.Matches(tagString.ToLower(), TAGS_PATTERN);
+        List<string> matchingTags = new();
 
-        if (selectedTagsFromString.Count > TAGS_MAX_QUANTITY)
-            throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
-
-        foreach (Match selectedTagFromString in selectedTagsFromString)
+        foreach (var tag in tagsList)
         {
-            string selectedTagNameFromString = selectedTagFromString.Value;
+            MatchCollection matchedTagsFromList = Regex.Matches(tag, TAGS_PATTERN);
 
-            var existingEntityTag = await _repositoryTag.GetAsync(c => c.Name == selectedTagNameFromString).FirstOrDefaultAsync();
+            foreach (Match match in matchedTagsFromList)
+            {
+                matchingTags.Add(match.Value);
+            }
+        }
+
+        foreach (var tag in matchingTags)
+        {
+            var existingEntityTag = await _repositoryTag.GetAsync(c => c.Name == tag).FirstOrDefaultAsync();
 
             if (existingEntityTag == null)
             {
                 var newTag = new Tag
                 {
-                    Name = selectedTagNameFromString,
+                    Name = tag,
                     ArticleIds = new List<string> { articleEntity.Id }
                 };
                 await _repositoryTag.CreateAsync(newTag);
@@ -167,5 +228,72 @@ public class ArticleService : IArticleService
         }
 
         return tagsForArticleEntityList;
+    }
+
+    private async ValueTask<string> BuildQuery(GetArticlesPaginationRequest paginationRequest)
+    {
+        List<Tag> tagsList = new();
+
+        const string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\" ";
+        StringBuilder queryBuilder = new(baseQuery);
+
+        if (!paginationRequest.Author.IsNullOrEmpty())
+        {
+            queryBuilder.Append($"AND CONTAINS(LOWER(c.{nameof(Article.UserName).FirstLetterToLower()}), LOWER(\"{paginationRequest.Author}\")) ");
+        }
+
+        if (!paginationRequest.Tags.IsNullOrEmpty())
+        {
+            foreach (var tag in paginationRequest.Tags)
+            {
+                if (tag == null)
+                    throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+                var tagEntity = await _repositoryTag.GetAsync(c => c.Name.ToLower() == tag.ToLower()).FirstOrDefaultAsync();
+
+                if (tagEntity == null)
+                    throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+                queryBuilder.Append($"AND ARRAY_CONTAINS(c.{nameof(Article.TagIds).FirstLetterToLower()}, \"{tagEntity.Id}\") ");
+            }
+        }
+
+        if (!paginationRequest.Text.IsNullOrEmpty())
+        {
+            queryBuilder.Append(
+                $"AND CONTAINS(LOWER(c.{nameof(Article.Name).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) " +
+                $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) ");
+        }
+
+        queryBuilder.Append(" ORDER BY c.");
+
+        if (paginationRequest.SortBy.ToString() == nameof(SortOrder.Ascending))
+        {
+            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+        }
+        else if (paginationRequest.SortBy.ToString() == nameof(SortOrder.ByTheme))
+        {
+            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+        }
+        else
+        {
+            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+            queryBuilder.Append(" DESC");
+        }
+
+        return queryBuilder.ToString();
+    }
+
+    private async ValueTask<GetArticleResponse> ConvertGetArticleResponse(Article article)
+    {
+        string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" AND ARRAY_CONTAINS(c.{nameof(Tag.ArticleIds).FirstLetterToLower()}, '{article.Id}')";
+        var tagsList = await _repositoryTag.GetByQueryAsync(queryTagsByArticleId);
+        var imageResponse = await _imageService.GetAsync(article.ImageFileName);
+
+        GetArticleResponse articleResponse = _mapper.Map<GetArticleResponse>(article);
+        articleResponse.Image = imageResponse;
+        articleResponse.Tags = tagsList.Select(tag => _mapper.Map<TagResponse>(tag)).ToList();
+
+        return articleResponse;
     }
 }

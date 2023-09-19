@@ -7,6 +7,8 @@ public class ErrorMessages
     public const string USER_VALID_PASSWORD = "Password must contain at least 8 characters with at least one lowercase letter, one uppercase letter, one digit, and one special character (!, @, #, $, %, ^, &, +, =, -)!";
     public const string USER_VALID_REPEAT_PASSWORD = "Passwords do not match!";
     public const string USER_EXISTS_BY_EMAIL = "An user with the same email already exists!";
+    public const string USER_INVALID_INFO = "Personal information isn't valid, please fill the application one more time";
+    public const string USER_NOT_FOUND = "User not found";
 
     public const string ROLES_NOT_FOUND = "Roles not found.";
     public const string ROLE_NOT_FOUND = "Role not found.";
@@ -15,6 +17,7 @@ public class ErrorMessages
     public const string INVALID_EMAIL = "That's not the right email.";
     public const string NOT_MATCH_PASS = "Passwords don't match.";
     public const string INVALID_TOKEN = "The token is not valid. Repeat the password reset request.";
+    public const string INVALID_CONFIRM_TOKEN = "The confirmation code is not valid.";
 
     public const string LOG_IN_INVALID_CREDENTIALS = "Invalid credentials";
     public const string LOG_IN_CREDENTIALS_AGAIN = "Please enter credentials again";
@@ -32,6 +35,8 @@ public class ErrorMessages
     public const string ARTICLE_USER_NOT_FOUND = "There is no information about the author of the article";
     public const string ARTICLE_USER_WHO_UPDATED_NOT_FOUND = "There is no information about the author who made adjustments to the article";
 
+    public const string PAGE_NOT_EXISTS = "Page doesn't exist";
+
     public const string COMMENT_NOT_FOUND = "Comment not found";
     public const string COMMENTS_NOT_FOUND = "Comments not found";
     public const string COMMENT_AUTHOR_NOT_FOUND = "Author of comment not found";
@@ -39,6 +44,4 @@ public class ErrorMessages
     public const string USER_IS_NOT_ARTICLE_AUTHOR = "User is not author of artical";
     public const string LIKE_AUTHOR_NOT_FOUND = "Author of like not found";
     public const string COMMENT_PAGE_NOT_EXISTS = "Comments doesn't exist";
-
-    public const string USER_NOT_FOUND = "User not found";
 }

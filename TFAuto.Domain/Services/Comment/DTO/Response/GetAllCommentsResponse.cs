@@ -1,11 +1,7 @@
-﻿using TFAuto.Domain.Services.CommentService.Pagination;
-
-namespace TFAuto.Domain.Services.CommentService.DTO
+﻿namespace TFAuto.Domain.Services.CommentService.DTO
 {
-    public class GetAllCommentsResponse : BasePaginationComment
+    public class GetAllCommentsResponse : BasePagination
     {
-        public List<GetCommentResponse> Comments { get; set; } = new();
-
-        public SortCommentOrder OrderBy { get; set; }
+        public IEnumerable<GetCommentResponse> Comments { get; set; }
     }
 }

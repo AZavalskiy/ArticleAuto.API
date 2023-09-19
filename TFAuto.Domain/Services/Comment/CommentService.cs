@@ -1,14 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
-using Microsoft.IdentityModel.Tokens;
 using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
 using TFAuto.DAL.Constant;
 using TFAuto.DAL.Entities;
 using TFAuto.DAL.Entities.Article;
 using TFAuto.Domain.Services.CommentService.DTO;
-using TFAuto.Domain.Services.CommentService.Pagination;
 using TFAuto.Domain.Services.LikeService;
 
 namespace TFAuto.Domain.Services.CommentService
@@ -71,10 +69,14 @@ namespace TFAuto.Domain.Services.CommentService
             if (user == null)
                 throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
-            var article = await _repositoryArticle.GetAsync(t => t.Id == id.ToString()).FirstOrDefaultAsync();
-
             if (user.Id != comment.AuthorId)
                 throw new ValidationException(ErrorMessages.USER_IS_NOT_COMMENT_AUTHOR);
+
+            var articleId = comment.ArticleId;
+            var article = await _repositoryArticle.GetAsync(t => t.Id == articleId).FirstOrDefaultAsync();
+
+            if (article == null)
+                throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
             var commentMapped = _mapper.Map<Comment>(commentUpdate);
             var updatedComment = await _repositoryComment.CreateAsync(commentMapped);
@@ -116,59 +118,60 @@ namespace TFAuto.Domain.Services.CommentService
             }
         }
 
-        public async ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(BasePaginationCommentsRequest paginationRequest)
+        public async ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(Guid articleId, GetCommentPaginationRequest paginationRequest)
         {
-            string queryComments = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\"";
+            const int PAGINATION_SKIP_MIN_LIMIT = 0;
+            const int PAGINATION_TAKE_MIN_LIMIT = 1;
 
-            string queryCommentsSorting(string sortByParameter, string orderByParameter = "")
-            {
-                queryComments = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" ORDER BY c.{sortByParameter} {orderByParameter}";
-                return queryComments;
-            }
+            if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
+                throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
 
-            if (paginationRequest.Skip < 0 || paginationRequest.Take < 1)
-                throw new Exception(ErrorMessages.COMMENT_PAGE_NOT_EXISTS);
-
-            if (!paginationRequest.SortBy.ToString().IsNullOrEmpty())
-            {
-                switch (paginationRequest.SortBy.ToString())
-                {
-                    case nameof(SortCommentOrder.ByDate):
-                        queryComments = queryCommentsSorting(nameof(Comment.CreatedTimeUtc));
-                        break;
-
-                    case nameof(SortCommentOrder.ByLikes):
-                        queryComments = queryCommentsSorting(nameof(Comment.LikesCount), "DESC");
-                        break;
-                }
-            }
-
+            string queryComments = await BuildQuery(articleId, paginationRequest);
             var commentList = await _repositoryComment.GetByQueryAsync(queryComments);
 
             if (commentList == null)
-                throw new NotFoundException(ErrorMessages.COMMENT_NOT_FOUND);
+                throw new NotFoundException(ErrorMessages.COMMENTS_NOT_FOUND);
 
             var totalItems = commentList.Count();
 
             if (totalItems <= paginationRequest.Skip)
-                throw new NotFoundException(ErrorMessages.COMMENT_NOT_FOUND);
+                throw new NotFoundException(ErrorMessages.COMMENTS_NOT_FOUND);
 
             if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
                 paginationRequest.Take = (totalItems - paginationRequest.Skip);
+
+            var commentsResponseList = commentList
+                .Skip(paginationRequest.Skip)
+                .Take(paginationRequest.Take)
+                .Select(comment => _mapper.Map<GetCommentResponse>(comment))
+                .ToList();
 
             var allCommentsResponse = new GetAllCommentsResponse()
             {
                 TotalItems = totalItems,
                 Skip = paginationRequest.Skip,
                 Take = paginationRequest.Take,
-                OrderBy = paginationRequest.SortBy,
-                Comments = commentList
-                    .Skip(paginationRequest.Skip)
-                    .Take(paginationRequest.Take)
-                    .ToList()
+                Comments = commentsResponseList
             };
 
             return allCommentsResponse;
         }
+
+        private async ValueTask<string> BuildQuery(Guid articleId, GetCommentPaginationRequest paginationRequest)
+        {
+            var article = await _repositoryArticle.GetAsync(t => t.Id == articleId.ToString()).FirstOrDefaultAsync();
+
+            if (article == null)
+                throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+            string queryComments = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" AND c.articleId = \"{articleId.ToString()}\"";
+
+            queryComments += " ORDER BY c.timestamp DESC";
+
+            queryComments += $" OFFSET {paginationRequest.Skip} LIMIT {paginationRequest.Take}";
+
+            return queryComments;
+        }
+
     }
 }

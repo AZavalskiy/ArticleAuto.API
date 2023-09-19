@@ -72,7 +72,7 @@ namespace TFAuto.Domain.Services.UserPassword
 
         private static string GenerateRecoveryPasswordLink(string baseUrl)
         {
-            var resetLink = $"{baseUrl}/recovery-password";
+            var resetLink = $"{baseUrl}recovery-password";
             return resetLink;
         }
 

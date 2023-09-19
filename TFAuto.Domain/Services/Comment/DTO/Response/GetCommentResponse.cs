@@ -10,6 +10,8 @@
 
         public string AuthorId { get; set; }
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         public string ArticleId { get; set; }
 
     }

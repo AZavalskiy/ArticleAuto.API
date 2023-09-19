@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TFAuto.DAL.Constant;
+using TFAuto.Domain.Services;
 using TFAuto.Domain.Services.ArticlePage;
 using TFAuto.Domain.Services.ArticlePage.DTO.Request;
 using TFAuto.Domain.Services.ArticlePage.DTO.Response;
@@ -10,7 +11,6 @@ namespace TFAuto.WebApp.Controllers;
 
 [Route("articles")]
 [ApiController]
-[Authorize]
 public class ArticleController : ControllerBase
 {
     private readonly IArticleService _articleService;
@@ -23,8 +23,8 @@ public class ArticleController : ControllerBase
     [HttpPost]
     [Authorize(Policy = PermissionId.EDIT_ARTICLES)]
     [SwaggerOperation(
-    Summary = "Create an article",
-    Description = "Creates an article by an user with an author or superadmin role")]
+     Summary = "Create an article",
+     Description = "Creates an article")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(CreateArticleResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -37,8 +37,8 @@ public class ArticleController : ControllerBase
     [HttpPut("{id:Guid}")]
     [Authorize(Policy = PermissionId.MANAGE_ARTICLES)]
     [SwaggerOperation(
-    Summary = "Update an article",
-    Description = "Update an article by an user with a superadmin role")]
+     Summary = "Update an article",
+     Description = "Updates an article by id")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UpdateArticleResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
@@ -47,5 +47,35 @@ public class ArticleController : ControllerBase
     {
         var updatedArticle = await _articleService.UpdateArticleAsync(id, articleRequest);
         return Ok(updatedArticle);
+    }
+
+    [HttpGet("{id:Guid}")]
+    [Authorize]
+    [SwaggerOperation(
+     Summary = "Retrieve an article by id",
+     Description = "Retrieves an article with tags and an image")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetArticleResponse))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status404NotFound)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError)]
+    public async ValueTask<ActionResult<GetArticleResponse>> GetArticleAsync([FromRoute] Guid id)
+    {
+        var retrievedArticle = await _articleService.GetArticleAsync(id);
+        return Ok(retrievedArticle);
+    }
+
+    [HttpGet]
+    [Authorize]
+    [SwaggerOperation(
+     Summary = "Retrieve articles with pagination",
+     Description = "Retrieves articles by skip and take parameters and sorting")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetAllArticlesResponse))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status404NotFound)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError)]
+    public async ValueTask<ActionResult<GetAllArticlesResponse>> GetAllArticlesAsync([FromQuery] GetArticlesPaginationRequest paginationRquest)
+    {
+        var retrievedArticles = await _articleService.GetAllArticlesAsync(paginationRquest);
+        return Ok(retrievedArticles);
     }
 }

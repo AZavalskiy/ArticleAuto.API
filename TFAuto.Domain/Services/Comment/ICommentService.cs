@@ -1,5 +1,4 @@
 ﻿using TFAuto.Domain.Services.CommentService.DTO;
-using TFAuto.Domain.Services.CommentService.Pagination;
 
 namespace TFAuto.Domain.Services.CommentService
 {
@@ -11,6 +10,6 @@ namespace TFAuto.Domain.Services.CommentService
 
         ValueTask DeleteCommentAsync(Guid id, DeleteCommentRequest commentDelete);
 
-        ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(BasePaginationCommentsRequest paginationRequest);
+        ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(Guid articleId, GetCommentPaginationRequest paginationRequest);
     }
 }
