@@ -142,7 +142,7 @@ public class ArticleService : IArticleService
         if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
             throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
 
-        string queryArticles = BuildQuery(paginationRequest);
+        string queryArticles = await BuildQuery(paginationRequest);
         var articleList = await _repositoryArticle.GetByQueryAsync(queryArticles);
 
         if (articleList == null)
@@ -230,33 +230,58 @@ public class ArticleService : IArticleService
         return tagsForArticleEntityList;
     }
 
-    private string BuildQuery(GetArticlesPaginationRequest paginationRequest)
+    private async ValueTask<string> BuildQuery(GetArticlesPaginationRequest paginationRequest)
     {
-        const string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\"";
-        StringBuilder queryBuilder = new(baseQuery);
+        List<Tag> tagsList = new();
 
-        if (!paginationRequest.SortBy.ToString().IsNullOrEmpty())
+        const string baseQuery1 = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\" ";
+        StringBuilder queryBuilder1 = new(baseQuery1);
+
+        if (!paginationRequest.Author.IsNullOrEmpty())
         {
-            queryBuilder.Append(" ORDER BY c.");
+            queryBuilder1.Append($"AND CONTAINS(LOWER(c.{nameof(Article.UserName).FirstLetterToLower()}), LOWER(\"{paginationRequest.Author}\")) ");
+        }
 
-            switch (paginationRequest.SortBy.ToString())
+        if (!paginationRequest.Tags.IsNullOrEmpty())
+        {
+            foreach (var tag in paginationRequest.Tags)
             {
-                case nameof(SortOrder.ByTheme):
-                    queryBuilder.Append(nameof(Article.Name).FirstLetterToLower());
-                    break;
+                if (tag == null)
+                    throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
-                case nameof(SortOrder.Ascending):
-                    queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
-                    break;
+                var tagEntity = await _repositoryTag.GetAsync(c => c.Name.ToLower() == tag.ToLower()).FirstOrDefaultAsync();
 
-                case nameof(SortOrder.Descending):
-                    queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
-                    queryBuilder.Append(" DESC");
-                    break;
+                if (tagEntity == null)
+                    throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+                queryBuilder1.Append($"AND ARRAY_CONTAINS(c.{nameof(Article.TagIds).FirstLetterToLower()}, \"{tagEntity.Id}\") ");
             }
         }
 
-        return queryBuilder.ToString();
+        if (!paginationRequest.Text.IsNullOrEmpty())
+        {
+            queryBuilder1.Append(
+                $"AND CONTAINS(LOWER(c.{nameof(Article.Name).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) " +
+                $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) ");
+        }
+
+        queryBuilder1.Append(" ORDER BY c.");
+
+        if (paginationRequest.SortBy.ToString() == nameof(SortOrder.Ascending))
+        {
+            queryBuilder1.Append(nameof(Article.LastUpdatedTimeUtc));
+        }
+        else if (paginationRequest.SortBy.ToString() == nameof(SortOrder.ByTheme))
+        {
+            queryBuilder1.Append(nameof(Article.LastUpdatedTimeUtc));
+        }
+        else
+        {
+            queryBuilder1.Append(nameof(Article.LastUpdatedTimeUtc));
+            queryBuilder1.Append(" DESC");
+        }
+
+        return queryBuilder1.ToString();
     }
 
     private async ValueTask<GetArticleResponse> ConvertGetArticleResponse(Article article)
