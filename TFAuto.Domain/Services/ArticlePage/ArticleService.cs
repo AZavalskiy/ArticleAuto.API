@@ -179,6 +179,9 @@ public class ArticleService : IArticleService
         const int TAGS_MAX_QUANTITY = 5;
         const string TAGS_PATTERN = @"#[A-Za-z0-9]+";
 
+        if (tagsList.Count > TAGS_MAX_QUANTITY)
+            throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
+
         List<Tag> tagsForArticleEntityList = new();
 
         if (tagsList.IsNullOrEmpty())
@@ -197,9 +200,6 @@ public class ArticleService : IArticleService
                 matchingTags.Add(match.Value);
             }
         }
-
-        if (tagsList.Count > TAGS_MAX_QUANTITY)
-            throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
 
         foreach (var tag in matchingTags)
         {
@@ -234,12 +234,12 @@ public class ArticleService : IArticleService
     {
         List<Tag> tagsList = new();
 
-        const string baseQuery1 = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\" ";
-        StringBuilder queryBuilder1 = new(baseQuery1);
+        const string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\" ";
+        StringBuilder queryBuilder = new(baseQuery);
 
         if (!paginationRequest.Author.IsNullOrEmpty())
         {
-            queryBuilder1.Append($"AND CONTAINS(LOWER(c.{nameof(Article.UserName).FirstLetterToLower()}), LOWER(\"{paginationRequest.Author}\")) ");
+            queryBuilder.Append($"AND CONTAINS(LOWER(c.{nameof(Article.UserName).FirstLetterToLower()}), LOWER(\"{paginationRequest.Author}\")) ");
         }
 
         if (!paginationRequest.Tags.IsNullOrEmpty())
@@ -254,34 +254,34 @@ public class ArticleService : IArticleService
                 if (tagEntity == null)
                     throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
-                queryBuilder1.Append($"AND ARRAY_CONTAINS(c.{nameof(Article.TagIds).FirstLetterToLower()}, \"{tagEntity.Id}\") ");
+                queryBuilder.Append($"AND ARRAY_CONTAINS(c.{nameof(Article.TagIds).FirstLetterToLower()}, \"{tagEntity.Id}\") ");
             }
         }
 
         if (!paginationRequest.Text.IsNullOrEmpty())
         {
-            queryBuilder1.Append(
+            queryBuilder.Append(
                 $"AND CONTAINS(LOWER(c.{nameof(Article.Name).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) " +
                 $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) ");
         }
 
-        queryBuilder1.Append(" ORDER BY c.");
+        queryBuilder.Append(" ORDER BY c.");
 
         if (paginationRequest.SortBy.ToString() == nameof(SortOrder.Ascending))
         {
-            queryBuilder1.Append(nameof(Article.LastUpdatedTimeUtc));
+            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
         }
         else if (paginationRequest.SortBy.ToString() == nameof(SortOrder.ByTheme))
         {
-            queryBuilder1.Append(nameof(Article.LastUpdatedTimeUtc));
+            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
         }
         else
         {
-            queryBuilder1.Append(nameof(Article.LastUpdatedTimeUtc));
-            queryBuilder1.Append(" DESC");
+            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+            queryBuilder.Append(" DESC");
         }
 
-        return queryBuilder1.ToString();
+        return queryBuilder.ToString();
     }
 
     private async ValueTask<GetArticleResponse> ConvertGetArticleResponse(Article article)
