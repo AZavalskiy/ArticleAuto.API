@@ -3,7 +3,7 @@ using TFAuto.Domain.Services.Blob.DTO;
 
 namespace TFAuto.Domain.Services.ArticlePage.DTO.Response;
 
-public class UpdateArticleResponse
+public class GetArticleResponse
 {
     public string Id { get; set; }
 
@@ -18,7 +18,7 @@ public class UpdateArticleResponse
 
     public List<TagResponse> Tags { get; set; } = new();
 
-    public UploadFileResponse Image { get; set; }
+    public GetFileResponse Image { get; set; }
 
     public string CreatedTimeUtc { get; set; }
 
