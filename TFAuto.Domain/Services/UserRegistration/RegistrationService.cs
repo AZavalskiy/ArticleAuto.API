@@ -103,7 +103,7 @@ public class RegistrationService : IRegistrationService
 
     private static string GenerateConfirmEmailLink(string baseUrl, string id, string resetToken)
     {
-        var resetLink = $"{baseUrl}/register-confirm?id={id}&token={resetToken}";
+        var resetLink = $"{baseUrl}register-confirm?id={id}&token={resetToken}";
         return resetLink;
     }
 

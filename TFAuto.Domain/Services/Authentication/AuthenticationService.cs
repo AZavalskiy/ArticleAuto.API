@@ -37,6 +37,7 @@ public class AuthenticationService : IAuthenticationService
         return new LoginResponse
         {
             UserId = user.Id,
+            RoleId = user.RoleId,
             TokenModel = token
         };
     }
