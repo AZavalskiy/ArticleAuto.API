@@ -7,6 +7,7 @@ using TFAuto.Domain;
 using TFAuto.Domain.Configurations;
 using TFAuto.Domain.Mappers;
 using TFAuto.Domain.Seeds;
+using TFAuto.Domain.Services.Admin;
 using TFAuto.Domain.Services.ArticlePage;
 using TFAuto.Domain.Services.Authentication;
 using TFAuto.Domain.Services.Authentication.Constants;
@@ -165,6 +166,7 @@ public static class ServicesConfigurations
         serviceCollection.AddScoped<IAuthenticationService, AuthenticationService>();
         serviceCollection.AddScoped<IBlobService, BlobService>();
         serviceCollection.AddScoped<IArticleService, ArticleService>();
+        serviceCollection.AddScoped<IAdminService, AdminService>();
     }
 
     private static void AddMappers(IServiceCollection serviceCollection)
