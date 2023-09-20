@@ -14,6 +14,10 @@ public class Article : BaseEntity
 
     public List<string> TagIds { get; set; } = new();
 
+    public List<string> LikedUserIds { get; set; } = new();
+
+    public int LikesCount { get; set; }
+
     public string ImageFileName { get; set; }
 
     public override string PartitionKey { get; set; } = nameof(Article);

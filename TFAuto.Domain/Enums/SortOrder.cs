@@ -4,5 +4,5 @@
 
     Descending,
 
-    ByTheme,
+    TopRated
 }

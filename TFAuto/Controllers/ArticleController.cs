@@ -6,6 +6,7 @@ using TFAuto.Domain.Services;
 using TFAuto.Domain.Services.ArticlePage;
 using TFAuto.Domain.Services.ArticlePage.DTO.Request;
 using TFAuto.Domain.Services.ArticlePage.DTO.Response;
+using TFAuto.Domain.Services.Authentication.Constants;
 
 namespace TFAuto.WebApp.Controllers;
 
@@ -50,7 +51,6 @@ public class ArticleController : ControllerBase
     }
 
     [HttpGet("{id:Guid}")]
-    [Authorize]
     [SwaggerOperation(
      Summary = "Retrieve an article by id",
      Description = "Retrieves an article with tags and an image")]
@@ -65,7 +65,6 @@ public class ArticleController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
     [SwaggerOperation(
      Summary = "Retrieve articles with pagination",
      Description = "Retrieves articles by skip and take parameters and sorting")]
@@ -73,9 +72,78 @@ public class ArticleController : ControllerBase
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-    public async ValueTask<ActionResult<GetAllArticlesResponse>> GetAllArticlesAsync([FromQuery] GetArticlesPaginationRequest paginationRquest)
+    public async ValueTask<ActionResult<GetAllArticlesResponse>> GetAllArticlesAsync([FromQuery] GetAllArticlesRequest paginationRequest)
     {
-        var retrievedArticles = await _articleService.GetAllArticlesAsync(paginationRquest);
+        var retrievedArticles = await _articleService.GetAllArticlesAsync(paginationRequest);
+        return Ok(retrievedArticles);
+    }
+
+    [HttpPost("{id:Guid}/likes")]
+    [Authorize(Policy = PermissionId.EDIT_ARTICLES)]
+    [SwaggerOperation(
+    Summary = "Set like by articleId")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetAllArticlesResponse))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status404NotFound)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError)]
+    public async ValueTask<ActionResult<GetAllArticlesResponse>> SetLikeAsync([FromRoute] Guid id)
+    {
+        var isLiked = await _articleService.SetLikeAsync(id);
+        return Ok(isLiked);
+    }
+
+    [HttpDelete("{id:Guid}/likes")]
+    [Authorize(Policy = PermissionId.EDIT_ARTICLES)]
+    [SwaggerOperation(
+    Summary = "Remove like by articleId")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetAllArticlesResponse))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status404NotFound)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError)]
+    public async ValueTask<ActionResult<GetAllArticlesResponse>> RemoveLikeAsync([FromRoute] Guid id)
+    {
+        var isRemoved = await _articleService.RemoveLikeAsync(id);
+        return Ok(isRemoved);
+    }
+
+    [HttpGet("likes")]
+    [Authorize(Policy = PermissionId.EDIT_ARTICLES)]
+    [SwaggerOperation(
+    Summary = "Retrieve liked articles with pagination")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetAllLikedArticlesResponse))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status404NotFound)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError)]
+    public async ValueTask<ActionResult<GetAllLikedArticlesResponse>> GetAllLikedArticlesAsync([FromQuery] GetAllLikedArticlesRequest paginationRequest)
+    {
+        var userWhoLikedPages = HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID)?.Value;
+        var retrievedArticles = await _articleService.GetAllArticlesAsync(paginationRequest, userWhoLikedPages);
+        return Ok(retrievedArticles);
+    }
+
+    [HttpGet("authors")]
+    [SwaggerOperation(
+    Summary = "Retrieve top authors by articles' likes")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetTopAuthorsResponse))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status404NotFound)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError)]
+    public async ValueTask<ActionResult<GetTopAuthorsResponse>> GetTopAuthorsAsync([FromQuery] GetTopAuthorsRequest paginationRequest)
+    {
+        var retrievedArticles = await _articleService.GetTopAuthorsAsync(paginationRequest);
+        return Ok(retrievedArticles);
+    }
+
+    [HttpGet("tags")]
+    [SwaggerOperation(
+    Summary = "Retrieve top tags by articles' quantity")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetTopAuthorsResponse))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status404NotFound)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError)]
+    public async ValueTask<ActionResult<GetTopTagsResponse>> GetTopTagsAsync([FromQuery] GetTopTagsRequest paginationRequest)
+    {
+        var retrievedArticles = await _articleService.GetTopTagsAsync(paginationRequest);
         return Ok(retrievedArticles);
     }
 }
