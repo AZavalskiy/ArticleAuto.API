@@ -79,7 +79,7 @@ namespace TFAuto.Domain.Services.CommentService
                 throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
             var commentMapped = _mapper.Map<Comment>(commentUpdate);
-            var updatedComment = await _repositoryComment.CreateAsync(commentMapped);
+            var updatedComment = await _repositoryComment.UpdateAsync(commentMapped);
 
             updatedComment.ArticleId = article.Id;
             var updatedCommentResponce = _mapper.Map<UpdateCommentResponse>(updatedComment);
