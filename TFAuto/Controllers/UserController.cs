@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using TFAuto.Domain.Services.UserInfo;
@@ -10,7 +11,7 @@ namespace TFAuto.WebApp.Controllers
 {
     [ApiController]
     [Route("user")]
-    //[Authorize]
+    [Authorize]
 
     public class UserController : ControllerBase
     {
