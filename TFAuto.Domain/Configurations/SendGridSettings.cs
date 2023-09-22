@@ -7,5 +7,7 @@
         public string FromName { get; set; }
 
         public string FromEmail { get; set; }
+
+        public string ContactUsEmail { get; set; }
     }
 }
