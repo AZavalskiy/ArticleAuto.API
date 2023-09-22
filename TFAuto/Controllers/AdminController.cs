@@ -23,7 +23,7 @@ namespace TFAuto.WebApp.Controllers
             _adminService = adminService;
         }
 
-        [HttpGet("user-by-name")]
+        [HttpGet("users/name")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetUserResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -33,7 +33,7 @@ namespace TFAuto.WebApp.Controllers
             return Ok(user);
         }
 
-        [HttpGet("user-by-email")]
+        [HttpGet("users/email")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetUserResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -53,7 +53,7 @@ namespace TFAuto.WebApp.Controllers
             return Ok(users);
         }
 
-        [HttpPut("user-role")]
+        [HttpPut("users/{userId:Guid}")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetUserResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
