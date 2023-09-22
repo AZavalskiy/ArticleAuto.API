@@ -6,5 +6,6 @@
         public const string EDIT_ARTICLES = "EditArticles";
         public const string MANAGE_ARTICLES = "ManageArticles";
         public const string MANAGE_ROLES = "ManageRoles";
+        public const string MANAGE_USERS = "ManageUsers";
     }
 }

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
+using TFAuto.DAL.Constant;
 using TFAuto.Domain.Services.Admin;
 using TFAuto.Domain.Services.Admin.DTO.Request;
 using TFAuto.Domain.Services.Admin.DTO.Response;
@@ -10,7 +12,7 @@ namespace TFAuto.WebApp.Controllers
     [ApiController]
     [Produces("application/json")]
     [Route("admin")]
-    //[Authorize]
+    [Authorize(Policy = PermissionId.MANAGE_USERS)]
 
     public class AdminController : ControllerBase
     {
