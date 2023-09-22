@@ -1,24 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Text;
-using TFAuto.DAL.Constant;
-using TFAuto.Domain;
-using TFAuto.Domain.Configurations;
-using TFAuto.Domain.Mappers;
-using TFAuto.Domain.Seeds;
-using TFAuto.Domain.Services.Admin;
-using TFAuto.Domain.Services.ArticlePage;
-using TFAuto.Domain.Services.Authentication;
-using TFAuto.Domain.Services.Authentication.Constants;
-using TFAuto.Domain.Services.Blob;
-using TFAuto.Domain.Services.Email;
-using TFAuto.Domain.Services.Roles;
-using TFAuto.Domain.Services.UserPassword;
-using TFAuto.WebApp.Configurations;
-using TFAuto.WebApp.Middleware;
-
-namespace TFAuto.WebApp;
+﻿namespace TFAuto.WebApp;
 
 public static class ServicesConfigurations
 {
@@ -166,6 +146,8 @@ public static class ServicesConfigurations
         serviceCollection.AddScoped<IAuthenticationService, AuthenticationService>();
         serviceCollection.AddScoped<IBlobService, BlobService>();
         serviceCollection.AddScoped<IArticleService, ArticleService>();
+        serviceCollection.AddScoped<IUserInfoService, UserInfoService>();
+        serviceCollection.AddScoped<IUserUpdateInfoService, UserUpdateInfoService>();
         serviceCollection.AddScoped<IAdminService, AdminService>();
     }
 
@@ -174,6 +156,7 @@ public static class ServicesConfigurations
         serviceCollection.AddAutoMapper(typeof(UserMapper));
         serviceCollection.AddAutoMapper(typeof(RoleUserMapper));
         serviceCollection.AddAutoMapper(typeof(ArticleMapper));
+        serviceCollection.AddAutoMapper(typeof(UserUpdateInfoMapper));
     }
 
     public static void InitializeSeeds(this WebApplication app)
