@@ -10,7 +10,7 @@ using TFAuto.Domain.Services.UserUpdate.DTO;
 namespace TFAuto.WebApp.Controllers
 {
     [ApiController]
-    [Route("user")]
+    [Route("users")]
     [Authorize]
 
     public class UserController : ControllerBase
