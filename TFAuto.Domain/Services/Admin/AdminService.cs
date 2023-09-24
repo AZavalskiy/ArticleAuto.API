@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Azure.CosmosRepository;
+﻿using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
 using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
@@ -17,36 +16,59 @@ namespace TFAuto.Domain.Services.Admin
     {
         private readonly IRepository<User> _repositoryUser;
         private readonly IRepository<Role> _repositoryRole;
-        private readonly IMapper _mapper;
 
-        public AdminService(IRepository<User> repositoryUser, IRepository<Role> repositoryRole, IMapper mapper)
+        public AdminService(
+            IRepository<User> repositoryUser,
+            IRepository<Role> repositoryRole)
         {
             _repositoryUser = repositoryUser;
             _repositoryRole = repositoryRole;
-            _mapper = mapper;
+
         }
 
-        public async ValueTask<GetUserResponse> GetUserByNameAsync(string userName)
+        public async ValueTask<GetUserResponse> GetUserByUserNameOrEmailAsync(string query)
         {
-            var user = await _repositoryUser.GetAsync(t => t.UserName == userName).FirstOrDefaultAsync();
+            var userByName = await _repositoryUser.GetAsync(t => t.UserName == query).FirstOrDefaultAsync();
 
-            if (user is null)
-                throw new ValidationException(ErrorMessages.USER_NOT_FOUND);
+            var userByEmail = await _repositoryUser.GetAsync(t => t.Email == query).FirstOrDefaultAsync();
 
-            var role = await _repositoryRole.GetAsync(user.RoleId, nameof(Role));
-
-            if (role is null)
-                throw new NotFoundException(ErrorMessages.ROLES_NOT_FOUND);
-
-            var userInfo = new GetUserResponse
+            if (userByName != null)
             {
-                UserId = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                RoleName = role.RoleName
-            };
+                var role = await _repositoryRole.GetAsync(userByName.RoleId, "Role");
 
-            return userInfo;
+                if (role is null)
+                    throw new NotFoundException(ErrorMessages.ROLES_NOT_FOUND);
+
+                var userInfo = new GetUserResponse
+                {
+                    UserId = userByName.Id,
+                    UserName = userByName.UserName,
+                    Email = userByName.Email,
+                    RoleName = role.RoleName
+                };
+
+                return userInfo;
+            }
+
+            else if (userByEmail != null)
+            {
+                var role = await _repositoryRole.GetAsync(userByEmail.RoleId, "Role");
+
+                if (role is null)
+                    throw new NotFoundException(ErrorMessages.ROLES_NOT_FOUND);
+
+                var userInfo = new GetUserResponse
+                {
+                    UserId = userByEmail.Id,
+                    UserName = userByEmail.UserName,
+                    Email = userByEmail.Email,
+                    RoleName = role.RoleName
+                };
+
+                return userInfo;
+            }
+
+            throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
         }
 
         public async ValueTask<GetUserResponse> GetUserByEmailAsync(string email)

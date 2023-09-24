@@ -5,9 +5,7 @@ namespace TFAuto.Domain.Services.Admin
 {
     public interface IAdminService
     {
-        ValueTask<GetUserResponse> GetUserByNameAsync(string userName);
-
-        ValueTask<GetUserResponse> GetUserByEmailAsync(string email);
+        ValueTask<GetUserResponse> GetUserByUserNameOrEmailAsync(string query);
 
         ValueTask<GetAllUsersResponse> GetAllUsersAsync(GetUsersPaginationRequest paginationRequest);
 

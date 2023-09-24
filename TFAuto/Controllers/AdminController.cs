@@ -23,23 +23,13 @@ namespace TFAuto.WebApp.Controllers
             _adminService = adminService;
         }
 
-        [HttpGet("users/name")]
+        [HttpGet("users/search")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetUserResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<GetUserResponse>> GetUserByNameAsync([Required] string userName)
+        public async ValueTask<ActionResult<GetUserResponse>> GetUserByUserNameOrEmailAsync([Required] string userNameOrEmail)
         {
-            var user = await _adminService.GetUserByNameAsync(userName);
-            return Ok(user);
-        }
-
-        [HttpGet("users/email")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetUserResponse))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest)]
-        [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<GetUserResponse>> GetUserByEmailAsync([Required] string email)
-        {
-            var user = await _adminService.GetUserByEmailAsync(email);
+            var user = await _adminService.GetUserByUserNameOrEmailAsync(userNameOrEmail);
             return Ok(user);
         }
 
