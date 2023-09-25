@@ -3,5 +3,7 @@
     public class GetAllCommentsResponse : BasePagination
     {
         public IEnumerable<GetCommentResponse> Comments { get; set; }
+
+        public int TotalItems { get; set; }
     }
 }

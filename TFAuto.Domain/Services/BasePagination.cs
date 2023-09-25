@@ -1,10 +1,12 @@
-﻿namespace TFAuto.Domain.Services;
+﻿using System.ComponentModel;
+
+namespace TFAuto.Domain.Services;
 
 public class BasePagination
 {
-    public int TotalItems { get; set; }
-
-    public int Take { get; set; }
-
+    [DefaultValue(0)]
     public int Skip { get; set; }
+
+    [DefaultValue(25)]
+    public int Take { get; set; }
 }

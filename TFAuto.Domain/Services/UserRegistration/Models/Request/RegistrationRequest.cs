@@ -1,4 +1,6 @@
-﻿namespace TFAuto.Domain.Services.UserRegistration.Models.Request;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TFAuto.Domain.Services.UserRegistration.Models.Request;
 
 public class RegistrationRequest
 {
