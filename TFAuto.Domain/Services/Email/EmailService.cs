@@ -2,6 +2,8 @@
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using TFAuto.Domain.Configurations;
+using TFAuto.Domain.Services.Email.Models.Request;
+using TFAuto.Domain.Services.Email.Models.Response;
 
 namespace TFAuto.Domain.Services.Email
 {
@@ -28,6 +30,21 @@ namespace TFAuto.Domain.Services.Email
             var subject = "TFAuto. Password Reset Request";
             var body = $"<p>Use the following code to reset your password: <strong>{resetToken}</strong></p><p><a href='{resetLink}'>Click here to reset your password</a></p>";
             await SendEmailAsync(userEmail, subject, body);
+        }
+
+        public async ValueTask<ContactUsResponse> SendContactUsEmailAsync(ContactUsRequest contactUsRequest)
+        {
+            var sendGridSettings = _configuration.GetSection("SendGridSettings").Get<SendGridSettings>();
+
+            var subject = "TFAuto. Contact Us form";
+            var body = $"<p><strong>User's name: </strong>{contactUsRequest.UserName}</p><p> " +
+                $"<p><strong>User's email: </strong>{contactUsRequest.UserEmail}</p><p>" +
+                $"<p><strong>Message: <p></p></strong>{contactUsRequest.Text}</p><p>";
+
+            await SendEmailAsync(sendGridSettings.ContactUsEmail, subject, body);
+            var contactUsResponse = new ContactUsResponse { Message = "Your form is sent, thanks for your involvement, we'll contact you soon!" };
+
+            return contactUsResponse;
         }
 
         private async ValueTask SendEmailAsync(string userEmail, string subject, string body)
