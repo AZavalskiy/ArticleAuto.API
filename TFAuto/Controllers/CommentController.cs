@@ -12,7 +12,6 @@ namespace TFAuto.WebApp.Controllers
     [ApiController]
     [Produces("application/json")]
     [Route("comments")]
-    [Authorize]
 
     public class CommentController : ControllerBase
     {
@@ -26,6 +25,7 @@ namespace TFAuto.WebApp.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(CreateCommentResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -36,6 +36,7 @@ namespace TFAuto.WebApp.Controllers
         }
 
         [HttpPut("{id:Guid}")]
+        [Authorize]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UpdateCommentResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -66,25 +67,26 @@ namespace TFAuto.WebApp.Controllers
             return Ok(comments);
         }
 
-        [HttpPost("like/{commentId:Guid}")]
+        [HttpPost("{id:Guid}/like")]
+        [Authorize]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(bool))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<bool>> GiveLikeCommentAsync(Guid commentId, [Required] Guid userId)
+        public async ValueTask<ActionResult<bool>> GiveLikeCommentAsync(Guid id, [Required] Guid userId)
         {
-            var like = await _likeService.GiveLikeCommentAsync(commentId, userId);
+            var like = await _likeService.GiveLikeCommentAsync(id, userId);
             return Ok(like);
         }
 
-        [HttpDelete("like/{commentId:Guid}")]
+        [HttpDelete("{id:Guid}/like")]
+        [Authorize]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(bool))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<bool>> RemoveLikeCommentAsync(Guid commentId, [Required] Guid userId)
+        public async ValueTask<ActionResult<bool>> RemoveLikeCommentAsync(Guid id, [Required] Guid userId)
         {
-            var unlike = await _likeService.RemoveLikeCommentAsync(commentId, userId);
+            var unlike = await _likeService.RemoveLikeCommentAsync(id, userId);
             return Ok(unlike);
         }
-
     }
 }
