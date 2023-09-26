@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
+using Microsoft.IdentityModel.Tokens;
 using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
@@ -24,74 +25,6 @@ namespace TFAuto.Domain.Services.Admin
             _repositoryUser = repositoryUser;
             _repositoryRole = repositoryRole;
 
-        }
-
-        public async ValueTask<GetUserResponse> GetUserByUserNameOrEmailAsync(string query)
-        {
-            var userByName = await _repositoryUser.GetAsync(t => t.UserName == query).FirstOrDefaultAsync();
-
-            var userByEmail = await _repositoryUser.GetAsync(t => t.Email == query).FirstOrDefaultAsync();
-
-            if (userByName != null)
-            {
-                var role = await _repositoryRole.GetAsync(userByName.RoleId, "Role");
-
-                if (role is null)
-                    throw new NotFoundException(ErrorMessages.ROLES_NOT_FOUND);
-
-                var userInfo = new GetUserResponse
-                {
-                    UserId = userByName.Id,
-                    UserName = userByName.UserName,
-                    Email = userByName.Email,
-                    RoleName = role.RoleName
-                };
-
-                return userInfo;
-            }
-
-            else if (userByEmail != null)
-            {
-                var role = await _repositoryRole.GetAsync(userByEmail.RoleId, "Role");
-
-                if (role is null)
-                    throw new NotFoundException(ErrorMessages.ROLES_NOT_FOUND);
-
-                var userInfo = new GetUserResponse
-                {
-                    UserId = userByEmail.Id,
-                    UserName = userByEmail.UserName,
-                    Email = userByEmail.Email,
-                    RoleName = role.RoleName
-                };
-
-                return userInfo;
-            }
-
-            throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
-        }
-
-        public async ValueTask<GetUserResponse> GetUserByEmailAsync(string email)
-        {
-            var user = await _repositoryUser.GetAsync(t => t.Email == email).FirstOrDefaultAsync();
-
-            if (user is null)
-                throw new ValidationException(ErrorMessages.USER_NOT_FOUND);
-
-            var role = await _repositoryRole.GetAsync(user.RoleId, nameof(Role));
-
-            if (role is null)
-                throw new NotFoundException(ErrorMessages.ROLE_NOT_FOUND);
-
-            var userInfo = new GetUserResponse
-            {
-                UserId = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                RoleName = role.RoleName
-            };
-
-            return userInfo;
         }
 
         public async ValueTask<GetUserResponse> ChangeUserRoleAsync(Guid userId, string userNewRole)
@@ -137,12 +70,6 @@ namespace TFAuto.Domain.Services.Admin
 
         public async ValueTask<GetAllUsersResponse> GetAllUsersAsync(GetUsersPaginationRequest paginationRequest)
         {
-            const int PAGINATION_SKIP_MIN_LIMIT = 0;
-            const int PAGINATION_TAKE_MIN_LIMIT = 1;
-
-            if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
-                throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
-
             string queryUsers = await BuildQuery(paginationRequest);
             var users = await _repositoryUser.GetByQueryAsync(queryUsers);
 
@@ -178,28 +105,37 @@ namespace TFAuto.Domain.Services.Admin
 
         private async ValueTask<string> BuildQuery(GetUsersPaginationRequest paginationRequest)
         {
-            string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(User)}\"";
+            string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(User)}\" ";
+            StringBuilder queryBuilder = new StringBuilder(baseQuery);
 
-            StringBuilder queryBuilder = new(baseQuery);
-
-            if (paginationRequest.SortBy.ToString() == nameof(SortOrderUsers.UserNameAscending))
+            if (!paginationRequest.Text.IsNullOrEmpty())
             {
-                queryBuilder.Append($" ORDER BY c.{nameof(User.UserName)} ASC");
+                queryBuilder.Append("AND (");
+
+                queryBuilder.Append(
+                    $"CONTAINS(LOWER(c.{nameof(User.UserName).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) " +
+                    $"OR CONTAINS(LOWER(c.{nameof(User.Email).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\"))");
+
+                queryBuilder.Append(") ");
             }
 
-            else if (paginationRequest.SortBy.ToString() == nameof(SortOrderUsers.UserNameDescending))
+            switch (paginationRequest.SortBy)
             {
-                queryBuilder.Append($" ORDER BY c.{nameof(User.UserName)} DESC");
-            }
+                case SortOrderUsers.UserNameAscending:
+                    queryBuilder.Append($" ORDER BY c.{nameof(User.UserName).FirstLetterToLower()} ASC");
+                    break;
 
-            else if (paginationRequest.SortBy.ToString() == nameof(SortOrderUsers.ByRoleAscending))
-            {
-                queryBuilder.Append($" ORDER BY c.{nameof(User.RoleId)} ASC");
-            }
+                case SortOrderUsers.UserNameDescending:
+                    queryBuilder.Append($" ORDER BY c.{nameof(User.UserName).FirstLetterToLower()} DESC");
+                    break;
 
-            else if (paginationRequest.SortBy.ToString() == nameof(SortOrderUsers.ByRoleDescending))
-            {
-                queryBuilder.Append($" ORDER BY c.{nameof(User.RoleId)} DESC");
+                case SortOrderUsers.ByRoleAscending:
+                    queryBuilder.Append($" ORDER BY c.{nameof(User.RoleId).FirstLetterToLower()} ASC");
+                    break;
+
+                case SortOrderUsers.ByRoleDescending:
+                    queryBuilder.Append($" ORDER BY c.{nameof(User.RoleId).FirstLetterToLower()} DESC");
+                    break;
             }
 
             return queryBuilder.ToString();
@@ -210,7 +146,7 @@ namespace TFAuto.Domain.Services.Admin
             var role = await _repositoryRole.GetAsync(user.RoleId, nameof(Role));
 
             if (role is null)
-                throw new NotFoundException(ErrorMessages.ROLES_NOT_FOUND);
+                throw new NotFoundException(ErrorMessages.ROLE_NOT_FOUND);
 
             var userResponse = new GetUserResponse
             {

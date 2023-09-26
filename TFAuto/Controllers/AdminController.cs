@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
-using TFAuto.DAL.Constant;
 using TFAuto.Domain.Services.Admin;
 using TFAuto.Domain.Services.Admin.DTO.Request;
 using TFAuto.Domain.Services.Admin.DTO.Response;
@@ -12,7 +10,7 @@ namespace TFAuto.WebApp.Controllers
     [ApiController]
     [Produces("application/json")]
     [Route("admin")]
-    [Authorize(Policy = PermissionId.MANAGE_USERS)]
+    //[Authorize(Policy = PermissionId.MANAGE_USERS)]
 
     public class AdminController : ControllerBase
     {
@@ -21,16 +19,6 @@ namespace TFAuto.WebApp.Controllers
         public AdminController(IAdminService adminService)
         {
             _adminService = adminService;
-        }
-
-        [HttpGet("users/search")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetUserResponse))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest)]
-        [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<GetUserResponse>> GetUserByUserNameOrEmailAsync([Required] string userNameOrEmail)
-        {
-            var user = await _adminService.GetUserByUserNameOrEmailAsync(userNameOrEmail);
-            return Ok(user);
         }
 
         [HttpGet("users")]
@@ -43,23 +31,23 @@ namespace TFAuto.WebApp.Controllers
             return Ok(users);
         }
 
-        [HttpPut("users/{userId:Guid}")]
+        [HttpPut("users/{id:Guid}")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetUserResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<GetUserResponse>> ChangeUserRoleAsync([Required] Guid userId, [Required] string userNewRole)
+        public async ValueTask<ActionResult<GetUserResponse>> ChangeUserRoleAsync([Required] Guid id, [Required] string userNewRole)
         {
-            var user = await _adminService.ChangeUserRoleAsync(userId, userNewRole);
+            var user = await _adminService.ChangeUserRoleAsync(id, userNewRole);
             return Ok(user);
         }
 
-        [HttpDelete("user/{userId:Guid}")]
+        [HttpDelete("users/{id:Guid}")]
         [SwaggerResponse(StatusCodes.Status204NoContent)]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<IActionResult> DeleteUserAsync([Required] Guid userId)
+        public async ValueTask<IActionResult> DeleteUserAsync([Required] Guid id)
         {
-            await _adminService.DeleteUserAsync(userId);
+            await _adminService.DeleteUserAsync(id);
             return NoContent();
         }
 

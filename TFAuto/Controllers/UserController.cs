@@ -31,23 +31,23 @@ namespace TFAuto.WebApp.Controllers
             _userPasswordService = userPasswordService;
         }
 
-        [HttpGet("{userId:Guid}")]
+        [HttpGet("{id:Guid}")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(InfoUserResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<InfoUserResponse>> GetUserInfo([Required] Guid userId)
+        public async ValueTask<ActionResult<InfoUserResponse>> GetUserInfo([Required] Guid id)
         {
-            var user = await _userInfoService.GetUserInfo(userId);
+            var user = await _userInfoService.GetUserInfo(id);
             return Ok(user);
         }
 
-        [HttpPut("{userId:Guid}")]
+        [HttpPut("{id:Guid}")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UpdateUserInfoResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<UpdateUserInfoResponse>> UpdateUserInfo([Required] Guid userId, [FromQuery] UserUpdateInfoRequest updateInfo)
+        public async ValueTask<ActionResult<UpdateUserInfoResponse>> UpdateUserInfo([Required] Guid id, [FromQuery] UserUpdateInfoRequest updateInfo)
         {
-            var user = await _userUpdateInfoService.UpdateUserInfo(userId, updateInfo);
+            var user = await _userUpdateInfoService.UpdateUserInfo(id, updateInfo);
             return Ok(user);
         }
 

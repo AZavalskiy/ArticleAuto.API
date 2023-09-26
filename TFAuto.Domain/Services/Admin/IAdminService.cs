@@ -5,8 +5,6 @@ namespace TFAuto.Domain.Services.Admin
 {
     public interface IAdminService
     {
-        ValueTask<GetUserResponse> GetUserByUserNameOrEmailAsync(string query);
-
         ValueTask<GetAllUsersResponse> GetAllUsersAsync(GetUsersPaginationRequest paginationRequest);
 
         ValueTask<GetUserResponse> ChangeUserRoleAsync(Guid userId, string userNewRole);

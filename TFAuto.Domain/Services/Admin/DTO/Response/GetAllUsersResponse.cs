@@ -1,6 +1,6 @@
 ﻿namespace TFAuto.Domain.Services.Admin.DTO.Response
 {
-    public class GetAllUsersResponse : BasePagination
+    public class GetAllUsersResponse : BasePaginationResponse
     {
         public List<GetUserResponse> Users { get; set; } = new();
 

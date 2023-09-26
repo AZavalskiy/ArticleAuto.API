@@ -1,14 +1,8 @@
-﻿using System.ComponentModel;
-
-namespace TFAuto.Domain.Services.Admin.DTO.Request
+﻿namespace TFAuto.Domain.Services.Admin.DTO.Request
 {
-    public class GetUsersPaginationRequest
+    public class GetUsersPaginationRequest : BasePaginationRequest
     {
-        [DefaultValue(0)]
-        public int Skip { get; set; }
-
-        [DefaultValue(25)]
-        public int Take { get; set; }
+        public string Text { get; set; }
 
         public SortOrderUsers SortBy { get; set; } = SortOrderUsers.UserNameAscending;
     }
