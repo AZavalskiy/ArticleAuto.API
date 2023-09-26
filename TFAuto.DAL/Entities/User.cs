@@ -15,4 +15,5 @@ public class User : BaseEntity
     public List<string> ArticleIds { get; set; } = new();
 
     public override string PartitionKey { get; set; } = nameof(User);
+    public List<string> PermissionIds { get; set; }
 }
