@@ -137,12 +137,6 @@ public class ArticleService : IArticleService
 
     public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetAllArticlesRequest paginationRequest, string userWhoLikedPages = "")
     {
-        const int PAGINATION_SKIP_MIN_LIMIT = 0;
-        const int PAGINATION_TAKE_MIN_LIMIT = 1;
-
-        if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
-            throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
-
         string queryArticles = await BuildQuery(paginationRequest, userWhoLikedPages);
         var articleList = await _repositoryArticle.GetByQueryAsync(queryArticles);
 
@@ -194,7 +188,7 @@ public class ArticleService : IArticleService
         else
         {
             article.LikedUserIds.Add(userWhoLikes);
-            article.LikesCount++;
+            article.LikesCount = article.LikedUserIds.Count;
             await _repositoryArticle.UpdateAsync(article);
 
             var userWhoWasLiked = await _repositoryUser.GetAsync(c => c.Id == article.UserId).FirstOrDefaultAsync();
@@ -224,7 +218,7 @@ public class ArticleService : IArticleService
         if (article.LikedUserIds.Any(c => c == userWhoRemovesLike))
         {
             article.LikedUserIds.Remove(userWhoRemovesLike);
-            article.LikesCount--;
+            article.LikesCount = article.LikedUserIds.Count;
             await _repositoryArticle.UpdateAsync(article);
 
             var userWhoWasDisliked = await _repositoryUser.GetAsync(c => c.Id == article.UserId).FirstOrDefaultAsync();
@@ -245,15 +239,10 @@ public class ArticleService : IArticleService
 
     public async ValueTask<GetTopAuthorsResponse> GetTopAuthorsAsync(GetTopAuthorsRequest paginationRequest)
     {
-        const int PAGINATION_SKIP_MIN_LIMIT = 0;
-        const int PAGINATION_TAKE_MIN_LIMIT = 1;
         string baseQuery =
             $"SELECT * FROM c WHERE c.type = \"{nameof(User)}\" " +
             $"AND c.{nameof(User.RoleId).FirstLetterToLower()} = \"{RoleId.AUTHOR}\" " +
             $"ORDER BY c.{nameof(User.ReceivedLikes).FirstLetterToLower()} DESC";
-
-        if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
-            throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
 
         var authorsList = await _repositoryUser.GetByQueryAsync(baseQuery);
 
@@ -282,12 +271,7 @@ public class ArticleService : IArticleService
 
     public async ValueTask<GetTopTagsResponse> GetTopTagsAsync(GetTopTagsRequest paginationRequest)
     {
-        const int PAGINATION_SKIP_MIN_LIMIT = 0;
-        const int PAGINATION_TAKE_MIN_LIMIT = 1;
         string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" ";
-
-        if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
-            throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
 
         var tagsList = await _repositoryTag.GetByQueryAsync(baseQuery);
 
