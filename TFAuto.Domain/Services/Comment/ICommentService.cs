@@ -10,6 +10,6 @@ namespace TFAuto.Domain.Services.CommentService
 
         ValueTask DeleteCommentAsync(Guid id, DeleteCommentRequest commentDelete);
 
-        ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(Guid articleId, GetCommentPaginationRequest paginationRequest);
+        ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(Guid articleId, GetCommentsPaginationRequest paginationRequest);
     }
 }

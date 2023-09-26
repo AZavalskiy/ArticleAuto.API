@@ -60,7 +60,7 @@ namespace TFAuto.WebApp.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetCommentResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public async ValueTask<ActionResult<GetCommentResponse>> GetAllCommentsAsync([Required] Guid articleId, [FromQuery] GetCommentPaginationRequest paginationRequest)
+        public async ValueTask<ActionResult<GetCommentResponse>> GetAllCommentsAsync([Required] Guid articleId, [FromQuery] GetCommentsPaginationRequest paginationRequest)
         {
             var comments = await _commentService.GetAllCommentsAsync(articleId, paginationRequest);
             return Ok(comments);

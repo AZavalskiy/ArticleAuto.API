@@ -1,9 +1,7 @@
 ﻿namespace TFAuto.Domain.Services.CommentService.DTO
 {
-    public class GetAllCommentsResponse : BasePagination
+    public class GetAllCommentsResponse : BasePaginationResponse
     {
         public IEnumerable<GetCommentResponse> Comments { get; set; }
-
-        public int TotalItems { get; set; }
     }
 }

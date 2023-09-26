@@ -1,6 +1,6 @@
 ﻿namespace TFAuto.Domain.Services;
 
-public class GetArticlesPaginationRequest : BasePagination
+public class GetArticlesPaginationRequest : BasePaginationRequest
 {
     public string Text { get; set; }
 

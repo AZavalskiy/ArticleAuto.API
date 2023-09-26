@@ -118,7 +118,7 @@ namespace TFAuto.Domain.Services.CommentService
             }
         }
 
-        public async ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(Guid articleId, GetCommentPaginationRequest paginationRequest)
+        public async ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(Guid articleId, GetCommentsPaginationRequest paginationRequest)
         {
             const int PAGINATION_SKIP_MIN_LIMIT = 0;
             const int PAGINATION_TAKE_MIN_LIMIT = 1;
@@ -157,7 +157,7 @@ namespace TFAuto.Domain.Services.CommentService
             return allCommentsResponse;
         }
 
-        private async ValueTask<string> BuildQuery(Guid articleId, GetCommentPaginationRequest paginationRequest)
+        private async ValueTask<string> BuildQuery(Guid articleId, GetCommentsPaginationRequest paginationRequest)
         {
             var article = await _repositoryArticle.GetAsync(t => t.Id == articleId.ToString()).FirstOrDefaultAsync();
 
@@ -166,7 +166,7 @@ namespace TFAuto.Domain.Services.CommentService
 
             string queryComments = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" AND c.articleId = \"{articleId.ToString()}\"";
 
-            queryComments += " ORDER BY c.timestamp DESC";
+            queryComments += " ORDER BY c.createdTimeUtc DESC";
 
             queryComments += $" OFFSET {paginationRequest.Skip} LIMIT {paginationRequest.Take}";
 
