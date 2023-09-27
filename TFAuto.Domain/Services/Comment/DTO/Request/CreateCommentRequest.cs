@@ -9,7 +9,7 @@ namespace TFAuto.Domain.Services.CommentService.DTO
         public Guid ArticleId { get; set; }
 
         [Required]
-        [MaxLength(2500)]
+        [MaxLength(500)]
         [MinLength(3)]
         public string Content { get; set; }
 

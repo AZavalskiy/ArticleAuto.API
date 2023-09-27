@@ -3,6 +3,7 @@ using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
 using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using TFAuto.DAL.Constant;
 using TFAuto.DAL.Entities;
 using TFAuto.DAL.Entities.Article;
@@ -123,10 +124,12 @@ namespace TFAuto.Domain.Services.CommentService
             const int PAGINATION_SKIP_MIN_LIMIT = 0;
             const int PAGINATION_TAKE_MIN_LIMIT = 1;
 
-            if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
-                throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
+            var article = await _repositoryArticle.GetAsync(t => t.Id == articleId.ToString()).FirstOrDefaultAsync();
 
-            string queryComments = await BuildQuery(articleId, paginationRequest);
+            if (article == null)
+                throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+            string queryComments = await BuildQuery(articleId);
             var commentList = await _repositoryComment.GetByQueryAsync(queryComments);
 
             if (commentList == null)
@@ -157,20 +160,14 @@ namespace TFAuto.Domain.Services.CommentService
             return allCommentsResponse;
         }
 
-        private async ValueTask<string> BuildQuery(Guid articleId, GetCommentsPaginationRequest paginationRequest)
+        private async ValueTask<string> BuildQuery(Guid articleId)
         {
-            var article = await _repositoryArticle.GetAsync(t => t.Id == articleId.ToString()).FirstOrDefaultAsync();
+            string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" AND c.articleId = \"{articleId.ToString()}\"";
+            StringBuilder queryBuilder = new(baseQuery);
 
-            if (article == null)
-                throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+            queryBuilder.Append(" ORDER BY c.createdTimeUtc DESC");
 
-            string queryComments = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" AND c.articleId = \"{articleId.ToString()}\"";
-
-            queryComments += " ORDER BY c.createdTimeUtc DESC";
-
-            queryComments += $" OFFSET {paginationRequest.Skip} LIMIT {paginationRequest.Take}";
-
-            return queryComments;
+            return queryBuilder.ToString();
         }
 
     }
