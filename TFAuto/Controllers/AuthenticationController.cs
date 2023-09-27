@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TFAuto.Domain;
 using TFAuto.Domain.Services.Authentication;
@@ -31,6 +32,7 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
+    [Authorize]
     [SwaggerOperation(
     Summary = "Get new tokens with Refresh token",
     Description = "Using valid refresh token get new pair of valid Access/Refresh tokens")]

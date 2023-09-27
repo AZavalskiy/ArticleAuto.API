@@ -1,6 +1,8 @@
 ﻿using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Authentication;
 using TFAuto.Domain.Services.Authentication.Constants;
 using TFAuto.Domain.Services.Authentication.Models.Request;
 using TFAuto.TFAuto.DAL.Entities;
@@ -23,14 +25,14 @@ public class AuthenticationService : IAuthenticationService
 
         if (user == null)
         {
-            throw new ArgumentException(ErrorMessages.LOG_IN_INVALID_CREDENTIALS);
+            throw new ValidationException(ErrorMessages.LOG_IN_INVALID_CREDENTIALS);
         }
 
         var hashedPassword = user.Password;
 
         if (!BCrypt.Net.BCrypt.Verify(loginCredentials.Password, hashedPassword))
         {
-            throw new ArgumentException(ErrorMessages.LOG_IN_INVALID_CREDENTIALS);
+            throw new ValidationException(ErrorMessages.LOG_IN_INVALID_CREDENTIALS);
         }
 
         var token = await _jwtService.GenerateTokenMode(user.Id, user.Email);
@@ -52,7 +54,7 @@ public class AuthenticationService : IAuthenticationService
 
         if (decodedToken.ValidTo < DateTime.UtcNow || bool.Parse(isAccess) == true)
         {
-            throw new ArgumentException(ErrorMessages.LOG_IN_CREDENTIALS_AGAIN);
+            throw new AuthenticationException(ErrorMessages.LOG_IN_CREDENTIALS_AGAIN);
         }
 
         var token = await _jwtService.GenerateTokenMode(userIdFromClaims, userEmailFromClaims);

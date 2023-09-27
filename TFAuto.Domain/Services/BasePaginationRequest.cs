@@ -4,6 +4,7 @@ namespace TFAuto.Domain.Services;
 
 public class BasePaginationRequest
 {
+
     [DefaultValue(0)]
     public int Skip { get; set; }
 

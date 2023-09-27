@@ -25,6 +25,9 @@ namespace TFAuto.Domain.Services.Blob
 
         public async ValueTask<GetFileResponse> GetAsync(string fileName)
         {
+            if (fileName == null)
+                throw new NotFoundException(ErrorMessages.FILE_NOT_FOUND);
+
             BlobClient blob = _container.GetBlobClient(fileName);
 
             bool exists = await blob.ExistsAsync();

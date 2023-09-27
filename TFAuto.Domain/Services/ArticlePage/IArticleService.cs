@@ -11,5 +11,13 @@ public interface IArticleService
 
     ValueTask<GetArticleResponse> GetArticleAsync(Guid articleId);
 
-    ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetArticlesPaginationRequest paginationRequest);
+    ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetAllArticlesRequest paginationRequest, string userWhoLikedPages = "");
+
+    ValueTask<bool> SetLikeAsync(Guid articleId);
+
+    ValueTask<bool> RemoveLikeAsync(Guid articleId);
+
+    ValueTask<GetTopAuthorsResponse> GetTopAuthorsAsync(GetTopAuthorsRequest paginationRequest);
+
+    ValueTask<GetTopTagsResponse> GetTopTagsAsync(GetTopTagsRequest paginationRequest);
 }

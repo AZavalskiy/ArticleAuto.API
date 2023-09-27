@@ -7,6 +7,7 @@ using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.RegularExpressions;
+using TFAuto.DAL.Constant;
 using TFAuto.DAL.Entities.Article;
 using TFAuto.Domain.ExtensionMethods;
 using TFAuto.Domain.Services.ArticlePage.DTO.Request;
@@ -134,15 +135,9 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
-    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetArticlesPaginationRequest paginationRequest)
+    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetAllArticlesRequest paginationRequest, string userWhoLikedPages = "")
     {
-        const int PAGINATION_SKIP_MIN_LIMIT = 0;
-        const int PAGINATION_TAKE_MIN_LIMIT = 1;
-
-        if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
-            throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
-
-        string queryArticles = await BuildQuery(paginationRequest);
+        string queryArticles = await BuildQuery(paginationRequest, userWhoLikedPages);
         var articleList = await _repositoryArticle.GetByQueryAsync(queryArticles);
 
         if (articleList == null)
@@ -174,13 +169,152 @@ public class ArticleService : IArticleService
         return allArticlesResponse;
     }
 
+    public async ValueTask<bool> SetLikeAsync(Guid articleId)
+    {
+        var userWhoLikes = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID)?.Value;
+
+        if (userWhoLikes == null)
+            throw new ValidationException(ErrorMessages.LIKE_USER_NOT_PERMITTED);
+
+        var article = await _repositoryArticle.GetAsync(c => c.Id == articleId.ToString()).FirstOrDefaultAsync();
+
+        if (article == null)
+            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+        if (article.LikedUserIds.Any(c => c == userWhoLikes))
+        {
+            return false;
+        }
+        else
+        {
+            article.LikedUserIds.Add(userWhoLikes);
+            article.LikesCount = article.LikedUserIds.Count;
+            await _repositoryArticle.UpdateAsync(article);
+
+            var user = await _repositoryUser.GetAsync(c => c.Id == userWhoLikes).FirstOrDefaultAsync();
+            user.LikedArticleIds.Add(article.Id);
+            await _repositoryUser.UpdateAsync(user);
+
+            var userWhoWasLiked = await _repositoryUser.GetAsync(c => c.Id == article.UserId).FirstOrDefaultAsync();
+            userWhoWasLiked.ReceivedLikesFromUserId.Add(user.Id);
+            await _repositoryUser.UpdateAsync(userWhoWasLiked);
+
+            return true;
+        }
+    }
+
+    public async ValueTask<bool> RemoveLikeAsync(Guid articleId)
+    {
+        var userWhoRemovesLike = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID)?.Value;
+
+        if (userWhoRemovesLike == null)
+            throw new ValidationException(ErrorMessages.LIKE_USER_NOT_PERMITTED);
+
+        var article = await _repositoryArticle.GetAsync(c => c.Id == articleId.ToString()).FirstOrDefaultAsync();
+
+        if (article == null)
+            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+
+        if (article.LikedUserIds.Any(c => c == userWhoRemovesLike))
+        {
+            article.LikedUserIds.Remove(userWhoRemovesLike);
+            article.LikesCount = article.LikedUserIds.Count;
+            await _repositoryArticle.UpdateAsync(article);
+
+            var user = await _repositoryUser.GetAsync(c => c.Id == userWhoRemovesLike).FirstOrDefaultAsync();
+            user.LikedArticleIds.Remove(article.Id);
+            await _repositoryUser.UpdateAsync(user);
+
+            var userWhoWasDisliked = await _repositoryUser.GetAsync(c => c.Id == article.UserId).FirstOrDefaultAsync();
+            userWhoWasDisliked.ReceivedLikesFromUserId.Remove(user.Id); ;
+            await _repositoryUser.UpdateAsync(userWhoWasDisliked);
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public async ValueTask<GetTopAuthorsResponse> GetTopAuthorsAsync(GetTopAuthorsRequest paginationRequest)
+    {
+        string baseQuery =
+            $"SELECT * FROM c WHERE c.type = \"{nameof(User)}\" " +
+            $"AND c.{nameof(User.RoleId).FirstLetterToLower()} = \"{RoleId.AUTHOR}\" ";
+
+        var authorsList = await _repositoryUser.GetByQueryAsync(baseQuery);
+
+        if (authorsList == null)
+            throw new NotFoundException(ErrorMessages.AUTHOR_NOT_EXISTS);
+
+        var totalItems = authorsList.Count();
+
+        if (totalItems <= paginationRequest.Skip)
+            throw new NotFoundException(ErrorMessages.AUTHOR_NOT_EXISTS);
+
+        if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
+            paginationRequest.Take = (totalItems - paginationRequest.Skip);
+
+        var authorsResponse = authorsList
+            .Skip(paginationRequest.Skip)
+            .Take(paginationRequest.Take)
+            .OrderByDescending(c => c.ReceivedLikesFromUserId.Count)
+            .Select(authors => _mapper.Map<GetAuthorResponse>(authors))
+            .ToList();
+
+        var topAuthorsResponse = new GetTopAuthorsResponse()
+        {
+            TotalItems = totalItems,
+            Skip = paginationRequest.Skip,
+            Take = paginationRequest.Take,
+            Authors = authorsResponse
+        };
+
+        return topAuthorsResponse;
+    }
+
+    public async ValueTask<GetTopTagsResponse> GetTopTagsAsync(GetTopTagsRequest paginationRequest)
+    {
+        string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" ";
+
+        var tagsList = await _repositoryTag.GetByQueryAsync(baseQuery);
+
+        tagsList.OrderByDescending(c => c.ArticleIds.Count);
+
+        if (tagsList == null)
+            throw new NotFoundException(ErrorMessages.TAG_NOT_EXISTS);
+
+        var totalItems = tagsList.Count();
+
+        if (totalItems <= paginationRequest.Skip)
+            throw new NotFoundException(ErrorMessages.TAG_NOT_EXISTS);
+
+        if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
+            paginationRequest.Take = (totalItems - paginationRequest.Skip);
+
+        var tagsResponse = tagsList
+            .Skip(paginationRequest.Skip)
+            .Take(paginationRequest.Take)
+            .OrderByDescending(c => c.ArticleIds.Count)
+            .Select(tag => _mapper.Map<TagResponse>(tag))
+            .ToList();
+
+        var topTagsResponse = new GetTopTagsResponse()
+        {
+            TotalItems = totalItems,
+            Skip = paginationRequest.Skip,
+            Take = paginationRequest.Take,
+            Tags = tagsResponse
+        };
+
+        return topTagsResponse;
+    }
+
     private async ValueTask<List<Tag>> AllocateTags(List<string> tagsList, Article articleEntity)
     {
         const int TAGS_MAX_QUANTITY = 5;
         const string TAGS_PATTERN = @"#[A-Za-z0-9]+";
-
-        if (tagsList.Count > TAGS_MAX_QUANTITY)
-            throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
 
         List<Tag> tagsForArticleEntityList = new();
 
@@ -188,6 +322,9 @@ public class ArticleService : IArticleService
         {
             return tagsForArticleEntityList;
         }
+
+        if (tagsList.Count > TAGS_MAX_QUANTITY)
+            throw new ValidationException(ErrorMessages.ARTICLE_MAX_TAGS_QUANTITY);
 
         List<string> matchingTags = new();
 
@@ -210,7 +347,7 @@ public class ArticleService : IArticleService
                 var newTag = new Tag
                 {
                     Name = tag,
-                    ArticleIds = new List<string> { articleEntity.Id }
+                    ArticleIds = new List<string> { articleEntity.Id },
                 };
                 await _repositoryTag.CreateAsync(newTag);
 
@@ -222,24 +359,28 @@ public class ArticleService : IArticleService
                 articleEntity.TagIds.Add(existingEntityTag.Id);
                 tagsForArticleEntityList.Add(existingEntityTag);
 
-                existingEntityTag.ArticleIds.Add(articleEntity.Id);
-                await _repositoryTag.UpdateAsync(existingEntityTag);
+                if (!existingEntityTag.ArticleIds.Contains(articleEntity.Id))
+                {
+                    existingEntityTag.ArticleIds.Add(articleEntity.Id);
+                    await _repositoryTag.UpdateAsync(existingEntityTag);
+                }
             }
         }
 
         return tagsForArticleEntityList;
     }
 
-    private async ValueTask<string> BuildQuery(GetArticlesPaginationRequest paginationRequest)
+    private async ValueTask<string> BuildQuery(GetAllArticlesRequest paginationRequest, string userWhoLikedPages = "")
     {
         List<Tag> tagsList = new();
 
         const string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\" ";
         StringBuilder queryBuilder = new(baseQuery);
 
-        if (!paginationRequest.Author.IsNullOrEmpty())
+
+        if (!userWhoLikedPages.IsNullOrEmpty())
         {
-            queryBuilder.Append($"AND CONTAINS(LOWER(c.{nameof(Article.UserName).FirstLetterToLower()}), LOWER(\"{paginationRequest.Author}\")) ");
+            queryBuilder.Append($"AND ARRAY_CONTAINS(c.{nameof(Article.LikedUserIds).FirstLetterToLower()}, \"{userWhoLikedPages}\") ");
         }
 
         if (!paginationRequest.Tags.IsNullOrEmpty())
@@ -260,9 +401,20 @@ public class ArticleService : IArticleService
 
         if (!paginationRequest.Text.IsNullOrEmpty())
         {
-            queryBuilder.Append(
-                $"AND CONTAINS(LOWER(c.{nameof(Article.Name).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) " +
-                $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) ");
+            List<string> wordList = paginationRequest.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            queryBuilder.Append("AND (");
+
+            foreach (var word in wordList)
+            {
+                queryBuilder.Append(
+                    $"CONTAINS(LOWER(c.{nameof(Article.Name).FirstLetterToLower()}), LOWER(\"{word}\")) " +
+                    $"OR CONTAINS(c.{nameof(Article.UserName).FirstLetterToLower()}, LOWER(\"{word}\"))  " +
+                    $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{word}\")) OR ");
+            }
+
+            queryBuilder.Remove(queryBuilder.Length - 3, 3);
+            queryBuilder.Append(") ");
         }
 
         queryBuilder.Append(" ORDER BY c.");
@@ -271,9 +423,10 @@ public class ArticleService : IArticleService
         {
             queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
         }
-        else if (paginationRequest.SortBy.ToString() == nameof(SortOrder.ByTheme))
+        else if (paginationRequest.SortBy.ToString() == nameof(SortOrder.TopRated))
         {
-            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+            queryBuilder.Append(nameof(Article.LikesCount).FirstLetterToLower());
+            queryBuilder.Append(" DESC");
         }
         else
         {

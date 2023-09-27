@@ -4,11 +4,14 @@ public class ErrorMessages
 {
     public const string USER_VALID_USER_NAME = "Only alphabetic letters are allowed for a username!";
     public const string USER_VALID_USER_NAME_LENGTH = "Username must contain no more than 50 alphabetic characters!";
-    public const string USER_VALID_PASSWORD = "Password must contain at least 8 characters with at least one lowercase letter, one uppercase letter, one digit, and one special character (!, @, #, $, %, ^, &, +, =, -)!";
+    public const string USER_VALID_PASSWORD = "Password must contain at least 8 characters with at least one lowercase letter, one uppercase letter, one digit, and one special character (!, @, #, $, %, ^, &, +, =, -, *)!";
     public const string USER_VALID_REPEAT_PASSWORD = "Passwords do not match!";
+    public const string USER_VALID_EMAIL = "Email may contain up to 50 characters!";
     public const string USER_EXISTS_BY_EMAIL = "An user with the same email already exists!";
     public const string USER_INVALID_INFO = "Personal information isn't valid, please fill the application one more time";
     public const string USER_NOT_FOUND = "User not found";
+
+    public const string AUTHOR_NOT_EXISTS = "Any author don't yet exist!";
 
     public const string ROLES_NOT_FOUND = "Roles not found.";
     public const string ROLE_NOT_FOUND = "Role not found.";
@@ -31,9 +34,15 @@ public class ErrorMessages
     public const string FILE_ALLOWED_EXTENSIONS = "Only next extensions are allowed: ";
 
     public const string ARTICLE_MAX_TAGS_QUANTITY = "You can chose up to 5 tags";
+    public const string ARTICLE_MAX_NAME = "Name max length is 195 symbol";
+    public const string ARTICLE_MAX_TEXT = "Text max length is 1000 symbol";
     public const string ARTICLE_NOT_FOUND = "Article not found";
     public const string ARTICLE_USER_NOT_FOUND = "There is no information about the author of the article";
     public const string ARTICLE_USER_WHO_UPDATED_NOT_FOUND = "There is no information about the author who made adjustments to the article";
+
+    public const string TAG_NOT_EXISTS = "Any tags don't yet exist!";
+
+    public const string LIKE_USER_NOT_PERMITTED = "You don't have an appropriate permission for this action";
 
     public const string PAGE_NOT_EXISTS = "Page doesn't exist";
 
