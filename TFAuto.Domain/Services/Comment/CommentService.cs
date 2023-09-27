@@ -124,9 +124,6 @@ namespace TFAuto.Domain.Services.CommentService
             const int PAGINATION_SKIP_MIN_LIMIT = 0;
             const int PAGINATION_TAKE_MIN_LIMIT = 1;
 
-            //if (paginationRequest.Skip < PAGINATION_SKIP_MIN_LIMIT || paginationRequest.Take < PAGINATION_TAKE_MIN_LIMIT)
-            //    throw new Exception(ErrorMessages.PAGE_NOT_EXISTS);
-
             var article = await _repositoryArticle.GetAsync(t => t.Id == articleId.ToString()).FirstOrDefaultAsync();
 
             if (article == null)
