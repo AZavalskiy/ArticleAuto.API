@@ -277,13 +277,19 @@ public class ArticleService : IArticleService
     public async ValueTask<GetTopTagsResponse> GetTopTagsAsync(GetTopTagsRequest paginationRequest)
     {
         string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" ";
+        StringBuilder queryBuilder = new(baseQuery);
 
-        var tagsList = await _repositoryTag.GetByQueryAsync(baseQuery);
+        if (!paginationRequest.Text.IsNullOrEmpty())
+        {
+            queryBuilder.Append($"AND CONTAINS(LOWER(c.{nameof(Tag.Name).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text.Trim()}\"))");
+        }
 
-        tagsList.OrderByDescending(c => c.ArticleIds.Count);
+        var tagsList = await _repositoryTag.GetByQueryAsync(queryBuilder.ToString());
 
         if (tagsList == null)
             throw new NotFoundException(ErrorMessages.TAG_NOT_EXISTS);
+
+        tagsList.OrderByDescending(c => c.ArticleIds.Count);
 
         var totalItems = tagsList.Count();
 
@@ -409,7 +415,7 @@ public class ArticleService : IArticleService
             {
                 queryBuilder.Append(
                     $"CONTAINS(LOWER(c.{nameof(Article.Name).FirstLetterToLower()}), LOWER(\"{word}\")) " +
-                    $"OR CONTAINS(c.{nameof(Article.UserName).FirstLetterToLower()}, LOWER(\"{word}\"))  " +
+                    $"OR CONTAINS(LOWER(c.{nameof(Article.UserName).FirstLetterToLower()}), LOWER(\"{word}\"))  " +
                     $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{word}\")) OR ");
             }
 

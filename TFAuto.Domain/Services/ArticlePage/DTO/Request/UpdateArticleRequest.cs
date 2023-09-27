@@ -14,7 +14,6 @@ public class UpdateArticleRequest
     public string Name { get; set; }
 
     [Required]
-    [MaxLength(1000, ErrorMessage = ErrorMessages.ARTICLE_MAX_TEXT)]
     [DefaultValue("New text of the article")]
     public string Text { get; set; }
 
