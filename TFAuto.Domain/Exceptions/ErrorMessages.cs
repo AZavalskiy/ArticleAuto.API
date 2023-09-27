@@ -10,6 +10,8 @@ public class ErrorMessages
     public const string USER_EXISTS_BY_EMAIL = "An user with the same email already exists!";
     public const string USER_INVALID_INFO = "Personal information isn't valid, please fill the application one more time";
 
+    public const string AUTHOR_NOT_EXISTS = "Any author don't yet exist!";
+
     public const string ROLES_NOT_FOUND = "Roles not found.";
     public const string ROLE_NOT_FOUND = "Role not found.";
     public const string ROLE_ALREADY_EXISTS = "Role already exists. Please input another name.";
@@ -36,6 +38,8 @@ public class ErrorMessages
     public const string ARTICLE_NOT_FOUND = "Article not found";
     public const string ARTICLE_USER_NOT_FOUND = "There is no information about the author of the article";
     public const string ARTICLE_USER_WHO_UPDATED_NOT_FOUND = "There is no information about the author who made adjustments to the article";
+
+    public const string TAG_NOT_EXISTS = "Any tags don't yet exist!";
 
     public const string LIKE_USER_NOT_PERMITTED = "You don't have an appropriate permission for this action";
 

@@ -8,8 +8,6 @@ public class GetAuthorResponse
 
     public string Email { get; set; }
 
-    public int ReceivedLikes { get; set; }
-
     public string RoleName { get; set; } = RoleNames.AUTHOR;
 
     public string RoleId { get; set; }

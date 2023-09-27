@@ -16,7 +16,7 @@ public class User : BaseEntity
 
     public List<string> LikedArticleIds { get; set; } = new();
 
-    public int ReceivedLikes { get; set; }
+    public List<string> ReceivedLikesFromUserId { get; set; } = new();
 
     public override string PartitionKey { get; set; } = nameof(User);
 }

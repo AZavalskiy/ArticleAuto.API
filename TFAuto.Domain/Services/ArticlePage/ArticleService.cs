@@ -191,13 +191,13 @@ public class ArticleService : IArticleService
             article.LikesCount = article.LikedUserIds.Count;
             await _repositoryArticle.UpdateAsync(article);
 
-            var userWhoWasLiked = await _repositoryUser.GetAsync(c => c.Id == article.UserId).FirstOrDefaultAsync();
-            userWhoWasLiked.ReceivedLikes++;
-            await _repositoryUser.UpdateAsync(userWhoWasLiked);
-
             var user = await _repositoryUser.GetAsync(c => c.Id == userWhoLikes).FirstOrDefaultAsync();
             user.LikedArticleIds.Add(article.Id);
             await _repositoryUser.UpdateAsync(user);
+
+            var userWhoWasLiked = await _repositoryUser.GetAsync(c => c.Id == article.UserId).FirstOrDefaultAsync();
+            userWhoWasLiked.ReceivedLikesFromUserId.Add(user.Id);
+            await _repositoryUser.UpdateAsync(userWhoWasLiked);
 
             return true;
         }
@@ -221,13 +221,13 @@ public class ArticleService : IArticleService
             article.LikesCount = article.LikedUserIds.Count;
             await _repositoryArticle.UpdateAsync(article);
 
-            var userWhoWasDisliked = await _repositoryUser.GetAsync(c => c.Id == article.UserId).FirstOrDefaultAsync();
-            userWhoWasDisliked.ReceivedLikes--;
-            await _repositoryUser.UpdateAsync(userWhoWasDisliked);
-
             var user = await _repositoryUser.GetAsync(c => c.Id == userWhoRemovesLike).FirstOrDefaultAsync();
             user.LikedArticleIds.Remove(article.Id);
             await _repositoryUser.UpdateAsync(user);
+
+            var userWhoWasDisliked = await _repositoryUser.GetAsync(c => c.Id == article.UserId).FirstOrDefaultAsync();
+            userWhoWasDisliked.ReceivedLikesFromUserId.Remove(user.Id); ;
+            await _repositoryUser.UpdateAsync(userWhoWasDisliked);
 
             return true;
         }
@@ -241,23 +241,28 @@ public class ArticleService : IArticleService
     {
         string baseQuery =
             $"SELECT * FROM c WHERE c.type = \"{nameof(User)}\" " +
-            $"AND c.{nameof(User.RoleId).FirstLetterToLower()} = \"{RoleId.AUTHOR}\" " +
-            $"ORDER BY c.{nameof(User.ReceivedLikes).FirstLetterToLower()} DESC";
+            $"AND c.{nameof(User.RoleId).FirstLetterToLower()} = \"{RoleId.AUTHOR}\" ";
 
         var authorsList = await _repositoryUser.GetByQueryAsync(baseQuery);
 
         if (authorsList == null)
-            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+            throw new NotFoundException(ErrorMessages.AUTHOR_NOT_EXISTS);
 
         var totalItems = authorsList.Count();
 
         if (totalItems <= paginationRequest.Skip)
-            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+            throw new NotFoundException(ErrorMessages.AUTHOR_NOT_EXISTS);
 
         if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
             paginationRequest.Take = (totalItems - paginationRequest.Skip);
 
-        var authorsResponse = authorsList.Select(authors => _mapper.Map<GetAuthorResponse>(authors)).ToList();
+        var authorsResponse = authorsList
+            .Skip(paginationRequest.Skip)
+            .Take(paginationRequest.Take)
+            .OrderByDescending(c => c.ReceivedLikesFromUserId.Count)
+            .Select(authors => _mapper.Map<GetAuthorResponse>(authors))
+            .ToList();
+
         var topAuthorsResponse = new GetTopAuthorsResponse()
         {
             TotalItems = totalItems,
@@ -278,19 +283,22 @@ public class ArticleService : IArticleService
         tagsList.OrderByDescending(c => c.ArticleIds.Count);
 
         if (tagsList == null)
-            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+            throw new NotFoundException(ErrorMessages.TAG_NOT_EXISTS);
 
         var totalItems = tagsList.Count();
 
         if (totalItems <= paginationRequest.Skip)
-            throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
+            throw new NotFoundException(ErrorMessages.TAG_NOT_EXISTS);
 
         if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
             paginationRequest.Take = (totalItems - paginationRequest.Skip);
 
         var tagsResponse = tagsList
+            .Skip(paginationRequest.Skip)
+            .Take(paginationRequest.Take)
             .OrderByDescending(c => c.ArticleIds.Count)
-            .Select(tag => _mapper.Map<TagResponse>(tag)).ToList();
+            .Select(tag => _mapper.Map<TagResponse>(tag))
+            .ToList();
 
         var topTagsResponse = new GetTopTagsResponse()
         {
