@@ -2,4 +2,5 @@
 
 public class GetTopTagsRequest : BasePaginationRequest
 {
+    public string Text { get; set; }
 }
