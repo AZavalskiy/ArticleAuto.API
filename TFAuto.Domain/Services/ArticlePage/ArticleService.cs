@@ -134,7 +134,7 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
-    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetArticlesPaginationRequest paginationRequest)
+    public async ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetAllArticlesRequest paginationRequest)
     {
         const int PAGINATION_SKIP_MIN_LIMIT = 0;
         const int PAGINATION_TAKE_MIN_LIMIT = 1;
@@ -230,16 +230,17 @@ public class ArticleService : IArticleService
         return tagsForArticleEntityList;
     }
 
-    private async ValueTask<string> BuildQuery(GetArticlesPaginationRequest paginationRequest)
+    private async ValueTask<string> BuildQuery(GetAllArticlesRequest paginationRequest, string userWhoLikedPages = "")
     {
         List<Tag> tagsList = new();
 
         const string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Article)}\" ";
         StringBuilder queryBuilder = new(baseQuery);
 
-        if (!paginationRequest.Author.IsNullOrEmpty())
+
+        if (!userWhoLikedPages.IsNullOrEmpty())
         {
-            queryBuilder.Append($"AND CONTAINS(LOWER(c.{nameof(Article.UserName).FirstLetterToLower()}), LOWER(\"{paginationRequest.Author}\")) ");
+            queryBuilder.Append($"AND ARRAY_CONTAINS(c.{nameof(Article.LikedUserIds).FirstLetterToLower()}, \"{userWhoLikedPages}\") ");
         }
 
         if (!paginationRequest.Tags.IsNullOrEmpty())
@@ -260,9 +261,20 @@ public class ArticleService : IArticleService
 
         if (!paginationRequest.Text.IsNullOrEmpty())
         {
-            queryBuilder.Append(
-                $"AND CONTAINS(LOWER(c.{nameof(Article.Name).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) " +
-                $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) ");
+            List<string> wordList = paginationRequest.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            queryBuilder.Append("AND (");
+
+            foreach (var word in wordList)
+            {
+                queryBuilder.Append(
+                    $"CONTAINS(LOWER(c.{nameof(Article.Name).FirstLetterToLower()}), LOWER(\"{word}\")) " +
+                    $"OR CONTAINS(LOWER(c.{nameof(Article.UserName).FirstLetterToLower()}), LOWER(\"{word}\"))  " +
+                    $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{word}\")) OR ");
+            }
+
+            queryBuilder.Remove(queryBuilder.Length - 3, 3);
+            queryBuilder.Append(") ");
         }
 
         queryBuilder.Append(" ORDER BY c.");
@@ -271,9 +283,10 @@ public class ArticleService : IArticleService
         {
             queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
         }
-        else if (paginationRequest.SortBy.ToString() == nameof(SortOrder.ByTheme))
+        else if (paginationRequest.SortBy.ToString() == nameof(SortOrder.TopRated))
         {
-            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+            queryBuilder.Append(nameof(Article.LikesCount).FirstLetterToLower());
+            queryBuilder.Append(" DESC");
         }
         else
         {

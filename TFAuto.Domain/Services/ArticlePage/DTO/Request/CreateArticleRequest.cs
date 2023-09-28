@@ -10,6 +10,7 @@ public class CreateArticleRequest
     public IFormFile Image { get; set; }
 
     [Required]
+    [MaxLength(195, ErrorMessage = ErrorMessages.ARTICLE_MAX_NAME)]
     [DefaultValue("Name of the article")]
     public string Name { get; set; }
 

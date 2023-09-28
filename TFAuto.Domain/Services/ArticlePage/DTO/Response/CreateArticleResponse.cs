@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using TFAuto.Domain.Services.Blob.DTO;
+﻿using TFAuto.Domain.Services.Blob.DTO;
 
 namespace TFAuto.Domain.Services.ArticlePage.DTO.Response;
 
@@ -11,7 +10,6 @@ public class CreateArticleResponse
 
     public string Text { get; set; }
 
-    [JsonProperty("author")]
     public string UserName { get; set; }
 
     public string LastUserWhoUpdated { get; set; }

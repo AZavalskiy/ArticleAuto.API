@@ -11,5 +11,5 @@ public interface IArticleService
 
     ValueTask<GetArticleResponse> GetArticleAsync(Guid articleId);
 
-    ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetArticlesPaginationRequest paginationRequest);
+    ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetAllArticlesRequest paginationRequest);
 }

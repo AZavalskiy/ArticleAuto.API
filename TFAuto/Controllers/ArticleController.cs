@@ -73,7 +73,7 @@ public class ArticleController : ControllerBase
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-    public async ValueTask<ActionResult<GetAllArticlesResponse>> GetAllArticlesAsync([FromQuery] GetArticlesPaginationRequest paginationRquest)
+    public async ValueTask<ActionResult<GetAllArticlesResponse>> GetAllArticlesAsync([FromQuery] GetAllArticlesRequest paginationRquest)
     {
         var retrievedArticles = await _articleService.GetAllArticlesAsync(paginationRquest);
         return Ok(retrievedArticles);

@@ -26,6 +26,7 @@ namespace TFAuto.Domain.Seeds
                         PermissionId.MANAGE_ARTICLES,
                         PermissionId.MANAGE_ROLES,
                         PermissionId.EDIT_ARTICLES,
+                        PermissionId.DELETE_COMMENT,
                         PermissionId.MANAGE_USERS
                     }
                 },
@@ -35,6 +36,18 @@ namespace TFAuto.Domain.Seeds
                     Id = RoleId.AUTHOR,
                     RoleName = RoleNames.AUTHOR,
                     PermissionIds = new List<string> {PermissionId.EDIT_ARTICLES}
+                },
+
+                new Role ()
+                {
+                    Id = RoleId.AUTHOR,
+                    RoleName = RoleNames.AUTHOR,
+                    PermissionIds = new List<string>
+                    {
+                        PermissionId.READ_ARTICLES,
+                        PermissionId.EDIT_ARTICLES,
+                        PermissionId.DELETE_COMMENT
+                    }
                 },
 
                 new Role ()
