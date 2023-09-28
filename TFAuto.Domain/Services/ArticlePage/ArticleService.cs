@@ -276,8 +276,8 @@ public class ArticleService : IArticleService
 
     public async ValueTask<GetTopTagsResponse> GetTopTagsAsync(GetTopTagsRequest paginationRequest)
     {
-        string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" ";
-        StringBuilder queryBuilder = new(baseQuery);
+        const string BASE_QUERY = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" ";
+        StringBuilder queryBuilder = new(BASE_QUERY);
 
         if (!paginationRequest.Text.IsNullOrEmpty())
         {
