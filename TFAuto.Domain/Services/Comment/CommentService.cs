@@ -121,8 +121,6 @@ namespace TFAuto.Domain.Services.CommentService
 
         public async ValueTask<GetAllCommentsResponse> GetAllCommentsAsync(Guid articleId, GetCommentsPaginationRequest paginationRequest)
         {
-            const int PAGINATION_SKIP_MIN_LIMIT = 0;
-            const int PAGINATION_TAKE_MIN_LIMIT = 1;
 
             var article = await _repositoryArticle.GetAsync(t => t.Id == articleId.ToString()).FirstOrDefaultAsync();
 
@@ -143,11 +141,26 @@ namespace TFAuto.Domain.Services.CommentService
             if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
                 paginationRequest.Take = (totalItems - paginationRequest.Skip);
 
-            var commentsResponseList = commentList
-                .Skip(paginationRequest.Skip)
-                .Take(paginationRequest.Take)
-                .Select(comment => _mapper.Map<GetCommentResponse>(comment))
-                .ToList();
+            var commentsResponseList = new List<GetCommentResponse>();
+
+            foreach (var comment in commentList)
+            {
+                var author = await _repositoryUser.GetAsync(u => u.Id == comment.AuthorId).FirstOrDefaultAsync();
+
+                if (author != null)
+                {
+                    var commentResponse = new GetCommentResponse
+                    {
+                        Id = comment.Id,
+                        Content = comment.Content,
+                        LikesCount = comment.LikesCount,
+                        AuthorCommentName = author.UserName,
+                        CreatedAt = comment.CreatedTimeUtc.GetValueOrDefault(),
+                        ArticleId = comment.ArticleId
+                    };
+                    commentsResponseList.Add(commentResponse);
+                }
+            }
 
             var allCommentsResponse = new GetAllCommentsResponse()
             {
