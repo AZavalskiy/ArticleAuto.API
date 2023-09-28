@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.RegularExpressions;
 using TFAuto.DAL.Constant;
+using TFAuto.DAL.Entities;
 using TFAuto.DAL.Entities.Article;
 using TFAuto.Domain.ExtensionMethods;
 using TFAuto.Domain.Services.ArticlePage.DTO.Request;
@@ -22,15 +23,17 @@ public class ArticleService : IArticleService
     private readonly IRepository<Article> _repositoryArticle;
     private readonly IRepository<User> _repositoryUser;
     private readonly IRepository<Tag> _repositoryTag;
+    private readonly IRepository<Comment> _repositoryComment;
     private readonly IBlobService _imageService;
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IMapper _mapper;
 
-    public ArticleService(IRepository<Article> repositoryArticle, IRepository<User> repositoryUser, IRepository<Tag> repositoryTag, IBlobService imageService, IHttpContextAccessor contextAccessor, IMapper mapper)
+    public ArticleService(IRepository<Article> repositoryArticle, IRepository<User> repositoryUser, IRepository<Tag> repositoryTag, IBlobService imageService, IHttpContextAccessor contextAccessor, IMapper mapper, IRepository<Comment> repositoryComment)
     {
         _repositoryArticle = repositoryArticle;
         _repositoryUser = repositoryUser;
         _repositoryTag = repositoryTag;
+        _repositoryComment = repositoryComment;
         _imageService = imageService;
         _contextAccessor = contextAccessor;
         _mapper = mapper;
@@ -447,11 +450,16 @@ public class ArticleService : IArticleService
     {
         string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" AND ARRAY_CONTAINS(c.{nameof(Tag.ArticleIds).FirstLetterToLower()}, '{article.Id}')";
         var tagsList = await _repositoryTag.GetByQueryAsync(queryTagsByArticleId);
+
+        string queryCommentsQuantity = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" AND c.{nameof(Comment.ArticleId).FirstLetterToLower()} = \"{article.Id}\"";
+        var commentsList = await _repositoryComment.GetByQueryAsync(queryCommentsQuantity);
+
         var imageResponse = await _imageService.GetAsync(article.ImageFileName);
 
         GetArticleResponse articleResponse = _mapper.Map<GetArticleResponse>(article);
         articleResponse.Image = imageResponse;
         articleResponse.Tags = tagsList.Select(tag => _mapper.Map<TagResponse>(tag)).ToList();
+        articleResponse.CommentsCount = commentsList.Count();
 
         return articleResponse;
     }
