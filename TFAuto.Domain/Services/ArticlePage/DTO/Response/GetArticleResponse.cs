@@ -18,6 +18,8 @@ public class GetArticleResponse
 
     public int LikesCount { get; set; }
 
+    public int CommentsCount { get; set; }
+
     public GetFileResponse Image { get; set; }
 
     public string CreatedTimeUtc { get; set; }
