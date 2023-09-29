@@ -13,7 +13,6 @@ namespace TFAuto.WebApp.Controllers
 {
     [ApiController]
     [Route("users")]
-    [Authorize]
 
     public class UserController : ControllerBase
     {
@@ -32,6 +31,7 @@ namespace TFAuto.WebApp.Controllers
         }
 
         [HttpGet("{id:Guid}")]
+        [Authorize]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(InfoUserResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -42,6 +42,7 @@ namespace TFAuto.WebApp.Controllers
         }
 
         [HttpPut("{id:Guid}")]
+        [Authorize]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UpdateUserInfoResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
