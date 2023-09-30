@@ -4,7 +4,9 @@
 
     UserNameDescending,
 
-    ByRoleAscending,
+    SuperAdminRole,
 
-    ByRoleDescending
+    AuthorRole,
+
+    UserRole
 }

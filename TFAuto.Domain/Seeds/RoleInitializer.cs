@@ -47,7 +47,10 @@ namespace TFAuto.Domain.Seeds
                 {
                     Id = RoleId.USER,
                     RoleName = RoleNames.USER,
-                    PermissionIds = new List<string> {PermissionId.READ_ARTICLES}
+                    PermissionIds = new List<string>
+                    {
+                        PermissionId.READ_ARTICLES
+                    }
                 },
             };
 

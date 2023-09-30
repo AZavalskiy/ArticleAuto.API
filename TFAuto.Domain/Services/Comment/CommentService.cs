@@ -3,7 +3,6 @@ using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Extensions;
 using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 using TFAuto.DAL.Constant;
 using TFAuto.DAL.Entities;
 using TFAuto.DAL.Entities.Article;
@@ -127,7 +126,7 @@ namespace TFAuto.Domain.Services.CommentService
             if (article == null)
                 throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
-            string queryComments = await BuildQuery(articleId);
+            string queryComments = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" AND c.articleId = \"{articleId.ToString()}\" ORDER BY c.createdTimeUtc DESC"; ;
             var commentList = await _repositoryComment.GetByQueryAsync(queryComments);
 
             if (commentList == null)
@@ -171,16 +170,6 @@ namespace TFAuto.Domain.Services.CommentService
             };
 
             return allCommentsResponse;
-        }
-
-        private async ValueTask<string> BuildQuery(Guid articleId)
-        {
-            string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" AND c.articleId = \"{articleId.ToString()}\"";
-            StringBuilder queryBuilder = new(baseQuery);
-
-            queryBuilder.Append(" ORDER BY c.createdTimeUtc DESC");
-
-            return queryBuilder.ToString();
         }
 
     }
