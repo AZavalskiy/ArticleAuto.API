@@ -43,6 +43,20 @@ public class PermissionInitializer
                     PermissionName = PermissionNames.MANAGE_ROLES,
                     RoleIds = new List<string> {RoleId.SUPER_ADMIN}
                 },
+
+                new Permission ()
+                {
+                    Id = PermissionId.DELETE_COMMENT,
+                    PermissionName = PermissionNames.DELETE_COMMENT,
+                    RoleIds = new List<string> { RoleId.AUTHOR, RoleId.SUPER_ADMIN}
+                },
+
+                new Permission ()
+                {
+                    Id = PermissionId.MANAGE_USERS,
+                    PermissionName = PermissionNames.MANAGE_USERS,
+                    RoleIds = new List<string> {RoleId.SUPER_ADMIN}
+                },
             };
 
         foreach (var permission in permissions)

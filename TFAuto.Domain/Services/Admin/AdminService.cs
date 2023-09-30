@@ -5,6 +5,7 @@ using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text;
+using TFAuto.DAL.Constant;
 using TFAuto.DAL.Entities;
 using TFAuto.Domain.ExtensionMethods;
 using TFAuto.Domain.Services.Admin.DTO.Request;
@@ -105,12 +106,12 @@ namespace TFAuto.Domain.Services.Admin
 
         private async ValueTask<string> BuildQuery(GetUsersPaginationRequest paginationRequest)
         {
-            string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(User)}\" ";
+            string baseQuery = $"SELECT * FROM c WHERE c.type = \"{nameof(User)}\"";
             StringBuilder queryBuilder = new StringBuilder(baseQuery);
 
             if (!paginationRequest.Text.IsNullOrEmpty())
             {
-                queryBuilder.Append("AND (");
+                queryBuilder.Append(" AND (");
 
                 queryBuilder.Append(
                     $"CONTAINS(LOWER(c.{nameof(User.UserName).FirstLetterToLower()}), LOWER(\"{paginationRequest.Text}\")) " +
@@ -129,12 +130,20 @@ namespace TFAuto.Domain.Services.Admin
                     queryBuilder.Append($" ORDER BY c.{nameof(User.UserName).FirstLetterToLower()} DESC");
                     break;
 
-                case SortOrderUsers.ByRoleAscending:
-                    queryBuilder.Append($" ORDER BY c.{nameof(User.RoleId).FirstLetterToLower()} ASC");
+                case SortOrderUsers.UserRole:
+
+                    queryBuilder.Append($" AND c.roleId = \"{RoleId.USER}\"");
+                    queryBuilder.Append($" ORDER BY c.{nameof(User.UserName).FirstLetterToLower()} ASC");
                     break;
 
-                case SortOrderUsers.ByRoleDescending:
-                    queryBuilder.Append($" ORDER BY c.{nameof(User.RoleId).FirstLetterToLower()} DESC");
+                case SortOrderUsers.AuthorRole:
+                    queryBuilder.Append($" AND c.roleId = \"{RoleId.AUTHOR}\"");
+                    queryBuilder.Append($" ORDER BY c.{nameof(User.UserName).FirstLetterToLower()} ASC");
+                    break;
+
+                case SortOrderUsers.SuperAdminRole:
+                    queryBuilder.Append($" AND c.roleId = \"{RoleId.SUPER_ADMIN}\"");
+                    queryBuilder.Append($" ORDER BY c.userName ASC");
                     break;
             }
 
