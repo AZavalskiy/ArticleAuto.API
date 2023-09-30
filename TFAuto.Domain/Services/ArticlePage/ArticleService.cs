@@ -126,14 +126,25 @@ public class ArticleService : IArticleService
         return articleResponse;
     }
 
-    public async ValueTask<GetArticleResponse> GetArticleAsync(Guid articleId)
+    public async ValueTask<GetSingleArticleResponse> GetArticleAsync(Guid articleId)
     {
         var article = await _repositoryArticle.GetAsync(c => c.Id == articleId.ToString()).FirstOrDefaultAsync();
 
         if (article == null)
             throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
-        var articleResponse = await ConvertGetArticleResponse(article);
+        string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" AND ARRAY_CONTAINS(c.{nameof(Tag.ArticleIds).FirstLetterToLower()}, '{article.Id}')";
+        var tagsList = await _repositoryTag.GetByQueryAsync(queryTagsByArticleId);
+
+        string queryCommentsQuantity = $"SELECT * FROM c WHERE c.type = \"{nameof(Comment)}\" AND c.{nameof(Comment.ArticleId).FirstLetterToLower()} = \"{article.Id}\"";
+        var commentsList = await _repositoryComment.GetByQueryAsync(queryCommentsQuantity);
+
+        var imageResponse = await _imageService.GetAsync(article.ImageFileName);
+
+        GetSingleArticleResponse articleResponse = _mapper.Map<GetSingleArticleResponse>(article);
+        articleResponse.Image = imageResponse;
+        articleResponse.Tags = tagsList.Select(tag => _mapper.Map<TagResponse>(tag)).ToList();
+        articleResponse.CommentsCount = commentsList.Count();
 
         return articleResponse;
     }
