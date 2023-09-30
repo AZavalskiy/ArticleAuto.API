@@ -9,7 +9,7 @@ public interface IArticleService
 
     ValueTask<UpdateArticleResponse> UpdateArticleAsync(Guid articleId, UpdateArticleRequest articleRequest);
 
-    ValueTask<GetArticleResponse> GetArticleAsync(Guid articleId);
+    ValueTask<GetSingleArticleResponse> GetArticleAsync(Guid articleId);
 
     ValueTask<GetAllArticlesResponse> GetAllArticlesAsync(GetAllArticlesRequest paginationRequest, string userWhoLikedPages = "");
 

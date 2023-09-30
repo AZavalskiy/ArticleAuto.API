@@ -54,11 +54,11 @@ public class ArticleController : ControllerBase
     [SwaggerOperation(
      Summary = "Retrieve an article by id",
      Description = "Retrieves an article with tags and an image")]
-    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetArticleResponse))]
+    [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetSingleArticleResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-    public async ValueTask<ActionResult<GetArticleResponse>> GetArticleAsync([FromRoute] Guid id)
+    public async ValueTask<ActionResult<GetSingleArticleResponse>> GetArticleAsync([FromRoute] Guid id)
     {
         var retrievedArticle = await _articleService.GetArticleAsync(id);
         return Ok(retrievedArticle);
@@ -79,7 +79,7 @@ public class ArticleController : ControllerBase
     }
 
     [HttpPost("{id:Guid}/likes")]
-    [Authorize(Policy = PermissionId.EDIT_ARTICLES)]
+    [Authorize(Policy = PermissionId.READ_ARTICLES)]
     [SwaggerOperation(
     Summary = "Set like by articleId")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetAllArticlesResponse))]
@@ -93,7 +93,7 @@ public class ArticleController : ControllerBase
     }
 
     [HttpDelete("{id:Guid}/likes")]
-    [Authorize(Policy = PermissionId.EDIT_ARTICLES)]
+    [Authorize(Policy = PermissionId.READ_ARTICLES)]
     [SwaggerOperation(
     Summary = "Remove like by articleId")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetAllArticlesResponse))]
@@ -107,7 +107,7 @@ public class ArticleController : ControllerBase
     }
 
     [HttpGet("likes")]
-    [Authorize(Policy = PermissionId.EDIT_ARTICLES)]
+    [Authorize(Policy = PermissionId.READ_ARTICLES)]
     [SwaggerOperation(
     Summary = "Retrieve liked articles with pagination")]
     [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(GetAllLikedArticlesResponse))]
