@@ -1,6 +1,7 @@
-﻿namespace TFAuto.Domain.Services;
-
-public class BasePaginationResponse : BasePaginationRequest
+﻿namespace TFAuto.Domain.Services
 {
-    public int TotalItems { get; set; }
+    public class BasePaginationResponse : BasePaginationRequest
+    {
+        public int TotalItems { get; set; }
+    }
 }

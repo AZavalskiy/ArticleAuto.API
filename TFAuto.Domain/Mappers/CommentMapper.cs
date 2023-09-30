@@ -13,15 +13,6 @@ namespace TFAuto.Domain.Mappers
 
             CreateMap<UpdateCommentRequest, Comment>();
             CreateMap<Comment, UpdateCommentResponse>();
-
-            CreateMap<Comment, GetCommentResponse>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.AuthorId, opt => opt.MapFrom(src => src.AuthorId))
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
-                .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.LikesCount))
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedTimeUtc))
-                .ForMember(dest => dest.ArticleId, opt => opt.MapFrom(src => src.ArticleId));
-
         }
     }
 }

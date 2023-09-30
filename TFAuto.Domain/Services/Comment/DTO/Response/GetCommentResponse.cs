@@ -8,7 +8,7 @@
 
         public int LikesCount { get; set; }
 
-        public string AuthorId { get; set; }
+        public string AuthorCommentName { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

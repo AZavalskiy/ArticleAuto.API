@@ -10,12 +10,14 @@ public class ErrorMessages
     public const string USER_EXISTS_BY_EMAIL = "An user with the same email already exists!";
     public const string USER_INVALID_INFO = "Personal information isn't valid, please fill the application one more time";
     public const string USER_NOT_FOUND = "User not found";
+    public const string USERS_NOT_FOUND = "Users not found";
 
     public const string AUTHOR_NOT_EXISTS = "Any author don't yet exist!";
 
     public const string ROLES_NOT_FOUND = "Roles not found.";
     public const string ROLE_NOT_FOUND = "Role not found.";
     public const string ROLE_ALREADY_EXISTS = "Role already exists. Please input another name.";
+    public const string ROLES_ARE_EQUAL = "The user already has this role assigned.";
 
     public const string INVALID_EMAIL = "That's not the right email.";
     public const string NOT_MATCH_PASS = "Passwords don't match.";
