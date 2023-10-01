@@ -255,14 +255,15 @@ public class ArticleService : IArticleService
     {
         string baseQuery =
             $"SELECT * FROM c WHERE c.type = \"{nameof(User)}\" " +
-            $"AND c.{nameof(User.RoleId).FirstLetterToLower()} = \"{RoleId.AUTHOR}\" ";
+            $"AND( c.{nameof(User.RoleId).FirstLetterToLower()} = \"{RoleId.AUTHOR}\" OR c.{nameof(User.RoleId).FirstLetterToLower()} = \"{RoleId.SUPER_ADMIN}\")";
 
         var authorsList = await _repositoryUser.GetByQueryAsync(baseQuery);
 
         if (authorsList == null)
             throw new NotFoundException(ErrorMessages.AUTHOR_NOT_EXISTS);
 
-        var totalItems = authorsList.Count();
+        var authorsWithArticles = authorsList.Where(c => c.ArticleIds.Count > 0);
+        var totalItems = authorsWithArticles.Count();
 
         if (totalItems <= paginationRequest.Skip)
             throw new NotFoundException(ErrorMessages.AUTHOR_NOT_EXISTS);
@@ -270,7 +271,7 @@ public class ArticleService : IArticleService
         if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
             paginationRequest.Take = (totalItems - paginationRequest.Skip);
 
-        var authorsResponse = authorsList
+        var authorsResponse = authorsWithArticles
             .Skip(paginationRequest.Skip)
             .Take(paginationRequest.Take)
             .OrderByDescending(c => c.ReceivedLikesFromUserId.Count)
@@ -303,9 +304,9 @@ public class ArticleService : IArticleService
         if (tagsList == null)
             throw new NotFoundException(ErrorMessages.TAG_NOT_EXISTS);
 
-        tagsList.OrderByDescending(c => c.ArticleIds.Count);
+        var tagsWithArticles = tagsList.Where(c => c.ArticleIds.Count > 0).OrderByDescending(c => c.ArticleIds.Count);
 
-        var totalItems = tagsList.Count();
+        var totalItems = tagsWithArticles.Count();
 
         if (totalItems <= paginationRequest.Skip)
             throw new NotFoundException(ErrorMessages.TAG_NOT_EXISTS);
@@ -313,7 +314,7 @@ public class ArticleService : IArticleService
         if ((totalItems - paginationRequest.Skip) < paginationRequest.Take)
             paginationRequest.Take = (totalItems - paginationRequest.Skip);
 
-        var tagsResponse = tagsList
+        var tagsResponse = tagsWithArticles
             .Skip(paginationRequest.Skip)
             .Take(paginationRequest.Take)
             .OrderByDescending(c => c.ArticleIds.Count)
