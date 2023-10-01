@@ -447,7 +447,7 @@ public class ArticleService : IArticleService
 
         if (paginationRequest.SortBy.ToString() == nameof(SortOrder.Ascending))
         {
-            queryBuilder.Append("_ts");
+            queryBuilder.Append("createdTimeUtc");
         }
         else if (paginationRequest.SortBy.ToString() == nameof(SortOrder.TopRated))
         {
@@ -456,7 +456,7 @@ public class ArticleService : IArticleService
         }
         else
         {
-            queryBuilder.Append("_ts");
+            queryBuilder.Append("createdTimeUtc");
             queryBuilder.Append(" DESC");
         }
 
