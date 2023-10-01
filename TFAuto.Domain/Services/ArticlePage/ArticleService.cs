@@ -133,6 +133,13 @@ public class ArticleService : IArticleService
         if (article == null)
             throw new NotFoundException(ErrorMessages.ARTICLE_NOT_FOUND);
 
+        var userId = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID)?.Value;
+        bool IsLikedByUser = false;
+        if (article.LikedUserIds.Contains(userId))
+        {
+            IsLikedByUser = true;
+        }
+
         string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" AND ARRAY_CONTAINS(c.{nameof(Tag.ArticleIds).FirstLetterToLower()}, '{article.Id}')";
         var tagsList = await _repositoryTag.GetByQueryAsync(queryTagsByArticleId);
 
@@ -145,6 +152,7 @@ public class ArticleService : IArticleService
         articleResponse.Image = imageResponse;
         articleResponse.Tags = tagsList.Select(tag => _mapper.Map<TagResponse>(tag)).ToList();
         articleResponse.CommentsCount = commentsList.Count();
+        articleResponse.IsLikedByUser = IsLikedByUser;
 
         return articleResponse;
     }
@@ -424,25 +432,22 @@ public class ArticleService : IArticleService
         {
             List<string> wordList = paginationRequest.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
 
-            queryBuilder.Append("AND (");
-
             foreach (var word in wordList)
             {
+                queryBuilder.Append("AND (");
                 queryBuilder.Append(
                     $"CONTAINS(LOWER(c.{nameof(Article.Name).FirstLetterToLower()}), LOWER(\"{word}\")) " +
                     $"OR CONTAINS(LOWER(c.{nameof(Article.UserName).FirstLetterToLower()}), LOWER(\"{word}\"))  " +
-                    $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{word}\")) OR ");
+                    $"OR CONTAINS(LOWER(c.{nameof(Article.Text).FirstLetterToLower()}), LOWER(\"{word}\"))");
+                queryBuilder.Append(") ");
             }
-
-            queryBuilder.Remove(queryBuilder.Length - 3, 3);
-            queryBuilder.Append(") ");
         }
 
         queryBuilder.Append(" ORDER BY c.");
 
         if (paginationRequest.SortBy.ToString() == nameof(SortOrder.Ascending))
         {
-            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+            queryBuilder.Append("_ts");
         }
         else if (paginationRequest.SortBy.ToString() == nameof(SortOrder.TopRated))
         {
@@ -451,7 +456,7 @@ public class ArticleService : IArticleService
         }
         else
         {
-            queryBuilder.Append(nameof(Article.LastUpdatedTimeUtc));
+            queryBuilder.Append("_ts");
             queryBuilder.Append(" DESC");
         }
 
@@ -460,6 +465,13 @@ public class ArticleService : IArticleService
 
     private async ValueTask<GetArticleResponse> ConvertGetArticleResponse(Article article)
     {
+        var userId = _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimsType.USER_ID)?.Value;
+        bool IsLikedByUser = false;
+        if (article.LikedUserIds.Contains(userId))
+        {
+            IsLikedByUser = true;
+        }
+
         string queryTagsByArticleId = $"SELECT * FROM c WHERE c.type = \"{nameof(Tag)}\" AND ARRAY_CONTAINS(c.{nameof(Tag.ArticleIds).FirstLetterToLower()}, '{article.Id}')";
         var tagsList = await _repositoryTag.GetByQueryAsync(queryTagsByArticleId);
 
@@ -472,6 +484,7 @@ public class ArticleService : IArticleService
         articleResponse.Image = imageResponse;
         articleResponse.Tags = tagsList.Select(tag => _mapper.Map<TagResponse>(tag)).ToList();
         articleResponse.CommentsCount = commentsList.Count();
+        articleResponse.IsLikedByUser = IsLikedByUser;
 
         return articleResponse;
     }
